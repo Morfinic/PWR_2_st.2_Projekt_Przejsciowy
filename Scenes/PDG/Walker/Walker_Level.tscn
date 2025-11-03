@@ -1,0 +1,22 @@
+[gd_scene load_steps=2 format=3 uid="uid://crq1lrivv0yii"]
+
+[sub_resource type="GDScript" id="GDScript_v3aoi"]
+script/source = "extends Node
+
+
+var starting_pos: Vector2
+var level_size: Vector2i
+
+func generate_level():
+	starting_pos = level_size / 2
+	var walker = Walker.new(starting_pos, level_size)
+	var steps_amount = floor(level_size.x * level_size.y) * 0.75
+	
+	var map = walker.walk(steps_amount)
+	walker.queue_free()
+	
+	return map
+"
+
+[node name="WalkerLevel" type="Node"]
+script = SubResource("GDScript_v3aoi")
