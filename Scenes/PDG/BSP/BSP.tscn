@@ -1,0 +1,44 @@
+[gd_scene load_steps=2 format=3 uid="uid://b5aget88j8kx8"]
+
+[sub_resource type="GDScript" id="GDScript_a5sxg"]
+script/source = "extends Node
+class_name BSP
+
+
+var starting_pos: Vector2
+var level_size: Vector2i
+var root_node: TreeNode
+var map: Array = []
+var rooms: Array = []
+var rooms_map: Array = []
+
+
+func with_data(level_size) -> BSP:
+	self.level_size = level_size
+	return self
+
+
+func generate_level():
+	root_node = TreeNode.new(
+		Vector2i(0, 0),
+		self.level_size
+	)
+	root_node.split(10)
+	rooms = root_node.return_leaves()
+
+	for room in rooms:
+		var room_map: Array = []
+		for x in range(room.size.x):
+			for y in range(room.size.y):
+				var tile = Vector2(x + room.position.x, y + room.position.y)
+				room_map.append(tile)
+				map.append(tile)
+		rooms_map.append(room_map)
+	
+	root_node.clear()
+	
+	return map
+"
+
+[node name="BSP" type="Node"]
+script = SubResource("GDScript_a5sxg")

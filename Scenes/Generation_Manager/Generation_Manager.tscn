@@ -2,21 +2,61 @@
 
 [ext_resource type="Theme" uid="uid://c1gwtmfugunqi" path="res://Assets/Generation_Menu.tres" id="1_uumgm"]
 [ext_resource type="Texture2D" uid="uid://bxaam1kq853wu" path="res://Assets/TileLayers/TileMapExport.png" id="2_uumgm"]
-[ext_resource type="PackedScene" uid="uid://crq1lrivv0yii" path="res://Scenes/PDG/Walker/Walker_Level.tscn" id="3_q2ugx"]
+
+[sub_resource type="GDScript" id="GDScript_1kjex"]
+script/source = "extends Node2D
+
+const WALKER_LEVEL = preload(\"uid://crq1lrivv0yii\")
+const BSP = preload(\"uid://b5aget88j8kx8\")
+
+
+@onready var gen_alg_holder: Node2D = $Gen_Alg_Holder
+@onready var ground: TileMapLayer = $TileLayerHolder/Ground
+
+
+var map := []
+
+
+func prepare_level_gen(alg_selected, level_size):
+	print(alg_selected, \" \", level_size)
+	ground.clear()
+
+	match alg_selected:
+		# Drunken Walker
+		0:
+			gen_alg_holder.add_child(
+				WALKER_LEVEL.instantiate().with_data(level_size)
+			)
+		# BSP
+		1:
+			gen_alg_holder.add_child(
+				BSP.instantiate().with_data(level_size)
+			)
+	
+	var alg_node = gen_alg_holder.get_child(0)
+	
+	map = alg_node.generate_level()
+	ground.set_cells_terrain_connect(
+		map, 0, 0
+	)
+	alg_node.queue_free()
+"
 
 [sub_resource type="GDScript" id="GDScript_q2ugx"]
 script/source = "extends CanvasLayer
 
+signal generate_level
+
 
 @onready var alg_sel: OptionButton = $HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer/Algorithm_Select
-@onready var ground: TileMapLayer = $\"../TileLayerHolder/Ground\"
-@onready var gen_alg_holder: Node2D = $\"../Gen_Alg_Holder\"
 @onready var width_edit: SpinBox = $HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer/HBoxContainer/Width_Edit
 @onready var height_edit: SpinBox = $HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer/HBoxContainer/Height_Edit
+@onready var gen_alg_holder: Node2D = $\"../Gen_Alg_Holder\"
 
 
 func _ready() -> void:
 	self.visible = false
+	generate_level.connect(owner.prepare_level_gen)
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -26,24 +66,18 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 
 func _on_generate_btn_pressed() -> void:
-	ground.clear()
 	var alg_selected = alg_sel.selected
-	var get_alg_node
 	var level_size = Vector2i(
 		width_edit.value, height_edit.value
 	)
-	var map
 	
 	match alg_selected:
 		0:
 			print(\"Selected Random Walker\")
-			get_alg_node = gen_alg_holder.get_child(0)
-			get_alg_node.level_size = level_size
-			map = get_alg_node.generate_level()
-	
-	ground.set_cells_terrain_connect(
-		map, 0, 0
-	)
+		1:
+			print(\"Selected BSP\")
+
+	generate_level.emit(alg_selected, level_size)
 "
 
 [sub_resource type="GDScript" id="GDScript_uumgm"]
@@ -424,6 +458,7 @@ terrain_set_0/terrain_0/color = Color(18.892157, 0, 0, 1)
 sources/0 = SubResource("TileSetAtlasSource_q2ugx")
 
 [node name="GenerationManager" type="Node2D"]
+script = SubResource("GDScript_1kjex")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 script = SubResource("GDScript_q2ugx")
@@ -490,9 +525,12 @@ layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 4
 theme_override_font_sizes/font_size = 24
-item_count = 1
+selected = 0
+item_count = 2
 popup/item_0/text = "Random Walker"
 popup/item_0/id = 0
+popup/item_1/text = "BSP"
+popup/item_1/id = 1
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer"]
 layout_mode = 2
@@ -525,10 +563,6 @@ size_flags_horizontal = 0
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Generate_Btn" type="Button" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Generate_Btn_Container/Button_Container"]
-layout_mode = 2
-text = "Generate"
-
 [node name="Right" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Generate_Btn_Container/Button_Container"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -537,6 +571,13 @@ size_flags_horizontal = 3
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 1.25
+
+[node name="Generate_Btn" type="Button" parent="CanvasLayer"]
+offset_left = 36.0
+offset_top = 295.0
+offset_right = 188.0
+offset_bottom = 348.0
+text = "Generate"
 
 [node name="Camera" type="Camera2D" parent="."]
 position = Vector2(960, 545)
@@ -550,6 +591,4 @@ tile_set = SubResource("TileSet_1httw")
 
 [node name="Gen_Alg_Holder" type="Node2D" parent="."]
 
-[node name="WalkerLevel" parent="Gen_Alg_Holder" instance=ExtResource("3_q2ugx")]
-
-[connection signal="pressed" from="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Generate_Btn_Container/Button_Container/Generate_Btn" to="CanvasLayer" method="_on_generate_btn_pressed"]
+[connection signal="pressed" from="CanvasLayer/Generate_Btn" to="CanvasLayer" method="_on_generate_btn_pressed"]
