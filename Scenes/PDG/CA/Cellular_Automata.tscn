@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3 uid="uid://jjonoqkeahe3"]
+
+[sub_resource type="GDScript" id="GDScript_jc3ht"]
+script/source = "extends Node
+class_name Cellular_Automata
+
+
+var level_size
+
+
+func with_data(level_size) -> Cellular_Automata:
+	self.level_size = level_size
+	return self
+
+
+func generate_level():
+	var CellAut = CA.new(level_size)
+	var tmp_map = CellAut.simulate()
+
+	CellAut.queue_free()
+
+	return tmp_map
+"
+
+[node name="CellularAutomata" type="Node"]
+script = SubResource("GDScript_jc3ht")
