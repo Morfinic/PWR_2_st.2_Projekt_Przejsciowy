@@ -1,0 +1,84 @@
+[gd_scene load_steps=2 format=3 uid="uid://bh50pgygh8vwk"]
+
+[sub_resource type="GDScript" id="GDScript_egs5r"]
+script/source = "extends Node
+class_name Maze
+
+var level_size
+var visited: Dictionary = {}
+var maze_path: Dictionary = {}
+
+func with_data(level_size) -> Maze:
+	self.level_size = level_size
+	return self
+
+
+func generate_level():
+	randomize()
+	visited.clear()
+	maze_path.clear()
+	
+	_backtrack()
+	
+	return Array(
+		maze_path.keys(),
+		TYPE_VECTOR2I,
+		&\"\",
+		null
+	)
+
+
+func _backtrack():
+	var start_node = Vector2i(1, 1)
+	var stack: Array[Vector2i] = [start_node]
+	
+	visited[start_node] = true
+	maze_path[start_node] = true
+
+	while stack.size() > 0:
+		var current = stack.back()
+		var neighbours = _get_not_visi_nei(current)
+		
+		if neighbours.size() > 0:
+			var neigh = neighbours.pick_random()
+			var next_cell = neigh[0]
+			var wall = neigh[1]
+			
+			maze_path[next_cell] = true
+			maze_path[wall] = true
+			
+			visited[next_cell] = true
+			stack.append(next_cell)
+		else:
+			stack.pop_back()
+
+
+func _get_not_visi_nei(current: Vector2i) -> Array:
+	var unvisited = []
+	var directions = [
+		[Vector2i.UP, Vector2i.UP * 2],
+		[Vector2i.DOWN, Vector2i.DOWN * 2],
+		[Vector2i.LEFT, Vector2i.LEFT * 2],
+		[Vector2i.RIGHT, Vector2i.RIGHT * 2]
+	]
+	
+	for dir in directions:
+		var next_cell = current + dir[1]
+		if _valid_path(next_cell):
+			unvisited.append([next_cell, current + dir[0]])
+			
+	return unvisited
+
+
+func _valid_path(cell: Vector2i):
+	return (
+		cell.x > 0 and
+		cell.x < level_size.x - 1 and 
+		cell.y > 0 and
+		cell.y < level_size.y - 1 and 
+		not visited.has(cell)
+	)
+"
+
+[node name="Maze" type="Node"]
+script = SubResource("GDScript_egs5r")

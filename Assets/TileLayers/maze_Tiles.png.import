@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bkr1nr1f30id7"
-path="res://.godot/imported/level_tileset_Template.png-940ce0eefa979c7d52492d711978f185.ctex"
+uid="uid://23s81naj4snd"
+path="res://.godot/imported/maze_Tiles.png-29d0aed989206f528b23dfc6daef3a41.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/TileLayers/level_tileset_Template.png"
-dest_files=["res://.godot/imported/level_tileset_Template.png-940ce0eefa979c7d52492d711978f185.ctex"]
+source_file="res://Assets/TileLayers/maze_Tiles.png"
+dest_files=["res://.godot/imported/maze_Tiles.png-29d0aed989206f528b23dfc6daef3a41.ctex"]
 
 [params]
 
