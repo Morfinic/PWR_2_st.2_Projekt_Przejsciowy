@@ -11,6 +11,7 @@ const WALKER_LEVEL = preload(\"uid://crq1lrivv0yii\")
 const BSP = preload(\"uid://b5aget88j8kx8\")
 const CELLULAR_AUTOMATA = preload(\"uid://jjonoqkeahe3\")
 const MAZE = preload(\"uid://bh50pgygh8vwk\")
+const GENETIC = preload(\"uid://by14pdhds5xd3\")
 # Tilessets
 const MAIN_TILES = preload(\"uid://d3undk2ko1jv\")
 const MAZE_TILES = preload(\"uid://bdc2t5y02k4fw\")
@@ -24,7 +25,7 @@ var map := []
 
 
 func prepare_level_gen(alg_selected, level_size):
-	print(alg_selected, \" \", level_size)
+	print(alg_selected, \", \", level_size)
 	ground.clear()
 	
 	if alg_selected == 3:
@@ -53,10 +54,20 @@ func prepare_level_gen(alg_selected, level_size):
 			gen_alg_holder.add_child(
 				MAZE.instantiate().with_data(level_size)
 			)
+		4:
+			gen_alg_holder.add_child(
+				GENETIC.instantiate().with_data(level_size)
+			)
 
 	var alg_node = gen_alg_holder.get_child(0)
 
+	var start = Time.get_ticks_usec()
 	map = alg_node.generate_level()
+	var end = Time.get_ticks_usec()
+	var work_time = (end-start)*0.001
+
+	print(\"Generated in %s ms.\" % work_time)
+
 	ground.set_cells_terrain_connect(
 		map, 0, 0
 	)
@@ -209,7 +220,7 @@ size_flags_horizontal = 0
 size_flags_vertical = 4
 theme_override_font_sizes/font_size = 24
 selected = 0
-item_count = 4
+item_count = 5
 popup/item_0/text = "Random Walker"
 popup/item_0/id = 0
 popup/item_1/text = "BSP"
@@ -218,6 +229,8 @@ popup/item_2/text = "CA"
 popup/item_2/id = 2
 popup/item_3/text = "Maze"
 popup/item_3/id = 3
+popup/item_4/text = "Genetic"
+popup/item_4/id = 4
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer"]
 layout_mode = 2
@@ -229,7 +242,7 @@ text = "Width: "
 [node name="Width_Edit" type="SpinBox" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 max_value = 1000.0
-value = 50.0
+value = 25.0
 
 [node name="Height" type="Label" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer/HBoxContainer"]
 layout_mode = 2
@@ -238,7 +251,7 @@ text = "Height: "
 [node name="Height_Edit" type="SpinBox" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 max_value = 1000.0
-value = 50.0
+value = 25.0
 
 [node name="Generate_Btn_Container" type="MarginContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer"]
 layout_mode = 2

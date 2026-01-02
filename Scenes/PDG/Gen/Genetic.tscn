@@ -1,0 +1,282 @@
+[gd_scene load_steps=2 format=3 uid="uid://by14pdhds5xd3"]
+
+[sub_resource type="GDScript" id="GDScript_xm48a"]
+script/source = "extends Node
+class_name Genetic
+
+
+var level_size
+var pop_size: int = 30
+var gens: int = 80
+var mut_rate: float = 0.01
+var cross_rate: float = 0.45
+var elit_count: int = 2
+var floor_target: float = 0.5
+var noise_chance = 0.45
+
+class Pop:
+	var grid: Array = []
+	var fitness: float = 0.0
+
+var pops: Array[Pop] = []
+
+
+func with_data(level_size) -> Genetic:
+	self.level_size = level_size
+	return self
+
+
+func generate_level():
+	randomize()
+
+	_init_pops()
+	for i in gens:
+		_eval_fit()
+		var new_pop = _sel_and_breed()
+		pops = new_pop
+		print(\"Generation %d completed\" % i)
+	_eval_fit()
+	pops.sort_custom(func(a, b): return a.fitness > b.fitness)
+
+	return _create_map(pops[0].grid)
+
+
+func _init_pops():
+	pops.resize(pop_size)
+	#for i in pop_size:
+		#var pop = Pop.new()
+		#pop.grid = _rand_grid()
+		#pops.append(pop)
+	var task_id = WorkerThreadPool.add_group_task(
+		func(index):
+			var pop = Pop.new()
+			pop.grid = _rand_grid()
+			pops[index] = pop,
+		pop_size
+	)
+	WorkerThreadPool.wait_for_group_task_completion(task_id)
+
+
+func _create_map(pop_grid):
+	var grid: Array[Vector2i] = []
+	for x in range(level_size.x):
+		for y in range(level_size.y):
+			if pop_grid[x][y] == 1:
+				grid.append(Vector2i(x, y))
+
+	return grid
+
+func count_walls(x, y, area, grid):
+	var cnt = 0
+
+	for i in range(-area, area + 1):
+		for j in range(-area, area + 1):
+			if i == 0 and j == 0:
+				continue
+
+			var nx = x + i
+			var ny = y + j
+
+			if nx < 0 or nx >= level_size.x or ny < 0 or ny >= level_size.y:
+				cnt += 1
+			elif grid[nx][ny]:
+				cnt += 1
+
+	return cnt
+
+
+func _rand_grid():
+	var grid := []
+	var no_iter = 3
+
+	for x in range(level_size.x):
+		grid.append([])
+		for y in range(level_size.y):
+			grid[x].append(randf() < noise_chance)
+
+	for i in range(no_iter):
+		var grid_copy = grid.duplicate(true)
+
+		for y in range(level_size.y):
+			for x in range(level_size.x):
+				var wall_count = count_walls(x, y, 1, grid_copy)
+				var flood_protocol = count_walls(x, y, 2, grid_copy)
+
+				if grid_copy[x][y]:
+					if i == no_iter - 1:
+						grid_copy[x][y] = 1 if wall_count >= 4 or flood_protocol else 0
+					else:
+						grid_copy[x][y] = 1 if wall_count >= 4 else 0
+				else:
+					grid_copy[x][y] = 1 if wall_count >= 5 else 0
+
+			grid = grid_copy
+
+	for x in level_size.x:
+		for y in level_size.y:
+				grid[x][y] = 1 - grid[x][y]
+
+	return grid
+
+
+func _eval_fit():
+	#for pop in pops:
+		#pop.fitness = _calc_fit(pop.grid)
+	var task_id = WorkerThreadPool.add_group_task(
+		func(index):
+			pops[index].fitness = _calc_fit(pops[index].grid),
+		pops.size()
+	)
+	WorkerThreadPool.wait_for_group_task_completion(task_id)
+
+
+func _calc_fit(grid):
+	var total_size = level_size.x * level_size.y
+	var floor_count: int = 0
+	var acces_count: int = 0
+	var isolation_penalty: int = 0
+	
+	var start_pos := Vector2.ZERO
+	var start_found: bool = false
+	
+	for x in range(0.25 * level_size.x, 0.75 * level_size.x):
+		for y in range(0.25 * level_size.y, 0.75 * level_size.y):
+			if grid[x][y] == 1:
+				start_pos = Vector2i(x, y)
+				start_found = true
+				break
+		if start_found:
+			break
+
+	if not start_found:
+		return 0.0
+
+	var visited := {}
+	var stack: Array[Vector2i] = [start_pos]
+	visited[start_pos] = true
+	
+	var dirs = [
+		Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT
+	]
+	
+	while stack.size() > 0:
+		var pos = stack.pop_back()
+		acces_count += 1
+		
+		for dir in dirs:
+			var new_pos = pos + dir
+			if (
+				new_pos.x >= 0 and 
+				new_pos.x <= level_size.x - 1 and 
+				new_pos.y >= 0 and 
+				new_pos.y <= level_size.y - 1 and 
+				grid[new_pos.x][new_pos.y] == 1 and 
+				not visited.has(Vector2i(new_pos.x, new_pos.y))
+			):
+				visited[new_pos] = true
+				stack.append(new_pos)
+
+	for x in level_size.x:
+		for y in level_size.y:
+			if grid[x][y] == 1:
+				floor_count += 1
+				if count_walls(x, y, 1, grid) >= 7:
+					isolation_penalty += 1
+
+	var conn_ratio = acces_count / floor_count
+	var floor_ratio = floor_count / total_size
+	var floor_dev = abs(floor_ratio - floor_target)
+
+	var fitness = max(
+		conn_ratio * 3.0 + ((1 - floor_dev) * 1) - (isolation_penalty / total_size) * 10.0,
+		0.0
+	)
+
+	return fitness
+
+
+func _sel_and_breed() -> Array[Pop]:
+	var new_pops: Array[Pop] = []
+	new_pops.resize(pop_size)
+	
+	pops.sort_custom(func(a, b): return a.fitness > b.fitness)
+
+	for i in elit_count:
+		var elite = Pop.new()
+		elite.grid = pops[i].grid.duplicate(true)
+		elite.fitness = pops[i].fitness
+		new_pops[i] = elite
+
+	var task_id = WorkerThreadPool.add_group_task(
+		func(index):
+			var parent1 = _rank_selection()
+			var parent2 = _rank_selection()
+			var child_idx = index + elit_count
+			
+			var child = Pop.new()
+
+			if randf() < cross_rate:
+				child.grid = _cross(parent1.grid, parent2.grid)
+			else:
+				child.grid = parent1.grid.duplicate(true)
+
+			_mutate(child.grid)
+			new_pops[child_idx] = child,
+		pop_size - elit_count
+	)
+	WorkerThreadPool.wait_for_group_task_completion(task_id)
+
+	#while new_pops.size() < pop_size:
+		#var parent1 = _rank_selection()
+		#var parent2 = _rank_selection()
+#
+		#var child = Pop.new()
+#
+		#if randf() < cross_rate:
+			#child.grid = _cross(parent1.grid, parent2.grid)
+		#else:
+			#child.grid = parent1.grid.duplicate(true)
+#
+		#_mutate(child.grid)
+		#new_pops.append(child)
+
+	return new_pops
+
+
+func _rank_selection() -> Pop:
+	var rank_sum = (pop_size * (pop_size + 1)) / 2
+	var pick = randf() * rank_sum
+	var curr_sum = 0
+
+	for i in range(pop_size):
+		curr_sum += (pop_size - i)
+		if curr_sum >= pick:
+			return pops[i]
+
+	return pops[0]
+
+
+func _cross(grid1: Array, grid2: Array) -> Array:
+	var child_grid = grid1.duplicate(true)
+
+	var split_x = randi() % level_size.x
+
+	for x in range(split_x, level_size.x):
+		for y in range(level_size.y):
+			child_grid[x][y] = grid2[x][y]
+
+	return child_grid
+
+
+func _mutate(grid: Array):
+	if randf() < mut_rate:
+		var rx = randi() % (level_size.x - 2)
+		var ry = randi() % (level_size.y - 2)
+
+		for i in range(2):
+			for j in range(2):
+				grid[rx+i][ry+j] = 1
+"
+
+[node name="Genetic" type="Node"]
+script = SubResource("GDScript_xm48a")
