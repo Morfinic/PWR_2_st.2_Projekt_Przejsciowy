@@ -1,0 +1,32 @@
+[gd_scene load_steps=2 format=3 uid="uid://bdw8uhjar482"]
+
+[sub_resource type="GDScript" id="GDScript_nws1w"]
+script/source = "extends Node
+
+
+var startFunc
+
+
+func start():
+	startFunc = Time.get_ticks_usec()
+
+
+func stop(algName: String):
+	var stopFunc = Time.get_ticks_usec()
+	var duration = (stopFunc - startFunc) / 1000.0
+	#print(\"%s | Czas: %.3f ms\" % [algName, duration])
+	print(\"%.3f\" % duration)
+	
+	return duration
+
+
+func measure(function: Callable, algName: String = \"<>\"):
+	start()
+	var result = function.call()
+	stop(algName)
+	
+	return result
+"
+
+[node name="Timer" type="Node"]
+script = SubResource("GDScript_nws1w")

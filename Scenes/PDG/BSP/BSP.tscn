@@ -35,9 +35,105 @@ func generate_level():
 				map.append(tile)
 		rooms_map.append(room_map)
 	
+	# L-Shape
+	#connect_nodes(root_node)
+	
+	# Delaunay + MST
+	var centers = get_room_centers()
+	var all_edges = generate_delaunay_graph(centers)
+	var mst_edges = calculate_mst(centers, all_edges)
+	
+	for edge in all_edges:
+		if not edge in mst_edges and randf() < 0.15:
+			mst_edges.append(edge)
+
+	for edge in mst_edges:
+		create_corridor(Vector2i(centers[edge.from]), Vector2i(centers[edge.to]))
+	
 	root_node.clear()
 	
 	return map
+
+
+func connect_nodes(node: TreeNode):
+	if node.left_child == null and node.right_child == null:
+		node.connection_point = node.get_center()
+		return node.connection_point
+	
+	var p1 = connect_nodes(node.left_child)
+	var p2 = connect_nodes(node.right_child)
+	
+	create_corridor(p1, p2)
+	
+	node.connection_point = p1
+	
+	return node.connection_point
+
+
+func create_corridor(start: Vector2i, end: Vector2i):
+	var corner = Vector2i(end.x, start.y)
+	
+	for x in range(min(start.x, corner.x), max(start.x, corner.x) + 1):
+		var tile = Vector2(x, start.y)
+		if not map.has(tile): map.append(tile)
+	
+	for y in range(min(corner.y, end.y), max(corner.y, end.y) + 1):
+		var tile = Vector2(end.x, y)
+		if not map.has(tile): map.append(tile)
+
+
+func get_room_centers() -> PackedVector2Array:
+	var centers = PackedVector2Array()
+	for room in rooms:
+		var center = Vector2(room.position.x + room.size.x / 2.0, room.position.y + room.size.y / 2.0)
+		centers.append(center)
+	return centers
+
+
+func generate_delaunay_graph(centers: PackedVector2Array):
+	var indices = Geometry2D.triangulate_delaunay(centers)
+	var edges = []
+	
+	for i in range(0, indices.size(), 3):
+		var p1 = indices[i]
+		var p2 = indices[i+1]
+		var p3 = indices[i+2]
+		
+		add_edge_unique(edges, p1, p2, centers)
+		add_edge_unique(edges, p2, p3, centers)
+		add_edge_unique(edges, p3, p1, centers)
+	return edges
+
+
+func calculate_mst(centers: PackedVector2Array, all_edges: Array):
+	var mst_edges = []
+	var unvisited = range(centers.size())
+	var visited = [0]
+	unvisited.erase(0)
+	
+	while unvisited.size() > 0:
+		var best_edge = {\"weight\": INF}
+		for edge in all_edges:
+			if (edge.from in visited and edge.to in unvisited) or (edge.to in visited and edge.from in unvisited):
+				if edge.weight < best_edge.weight:
+					best_edge = edge
+		
+		if best_edge.weight != INF:
+			mst_edges.append(best_edge)
+			visited.append(best_edge.from if best_edge.to in visited else best_edge.to)
+			unvisited.erase(visited.back())
+			
+	return mst_edges
+
+
+func add_edge_unique(edges: Array, p1: int, p2: int, centers: PackedVector2Array):
+	var weight = centers[p1].distance_to(centers[p2])
+	var new_edge = {\"from\": p1, \"to\": p2, \"weight\": weight}
+	
+	for e in edges:
+		if (e.from == p1 and e.to == p2) or (e.from == p2 and e.to == p1):
+			return
+	edges.append(new_edge)
 "
 
 [node name="BSP" type="Node"]

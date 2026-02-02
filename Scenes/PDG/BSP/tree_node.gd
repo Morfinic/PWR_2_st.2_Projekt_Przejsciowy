@@ -6,6 +6,7 @@ var left_child: TreeNode
 var right_child: TreeNode
 var position: Vector2i
 var size: Vector2i
+var connection_point: Vector2i
 
 
 func _ready() -> void:
@@ -15,6 +16,10 @@ func _ready() -> void:
 func _init(position, size) -> void:
 	self.position = position
 	self.size = size
+
+
+func get_center() -> Vector2i:
+	return position + (size/2)
 
 
 func return_leaves():

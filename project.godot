@@ -18,6 +18,7 @@ config/icon="uid://bjwwluu153fkq"
 [autoload]
 
 SceneChanger="*res://Globals/SceneChanger.tscn"
+FuncTimer="*res://Globals/timer.tscn"
 
 [display]
 

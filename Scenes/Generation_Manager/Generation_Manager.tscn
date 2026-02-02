@@ -22,10 +22,11 @@ const MAZE_TILES = preload(\"uid://bdc2t5y02k4fw\")
 
 
 var map := []
+var AlgsNames: Array[String] = [\"Drunken Walker\", \"BSP\", \"CA\", \"Maze\", \"Genetyczny\"]
 
 
 func prepare_level_gen(alg_selected, level_size):
-	print(alg_selected, \", \", level_size)
+	#print(alg_selected, \", \", level_size)
 	ground.clear()
 	
 	if alg_selected == 3:
@@ -61,12 +62,7 @@ func prepare_level_gen(alg_selected, level_size):
 
 	var alg_node = gen_alg_holder.get_child(0)
 
-	var start = Time.get_ticks_usec()
-	map = alg_node.generate_level()
-	var end = Time.get_ticks_usec()
-	var work_time = (end-start)*0.001
-
-	print(\"Generated in %s ms.\" % work_time)
+	map = FuncTimer.measure(alg_node.generate_level, AlgsNames[alg_selected])
 
 	ground.set_cells_terrain_connect(
 		map, 0, 0
@@ -85,6 +81,7 @@ signal generate_level
 @onready var width_edit: SpinBox = $HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer/HBoxContainer/Width_Edit
 @onready var height_edit: SpinBox = $HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer/HBoxContainer/Height_Edit
 @onready var gen_alg_holder: Node2D = $\"../Gen_Alg_Holder\"
+@onready var num_tests: SpinBox = $HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container/Button_Container/Num_Tests
 
 
 func _ready() -> void:
@@ -110,6 +107,13 @@ func _on_generate_btn_pressed() -> void:
 		width_edit.value * 8,
 		height_edit.value * 8
 	)
+
+
+func _on_test_btn_pressed() -> void:
+	var numTests = num_tests.value
+	for i in range(numTests):
+		_on_generate_btn_pressed()
+		await get_tree().create_timer(0.05).timeout
 "
 
 [sub_resource type="GDScript" id="GDScript_uumgm"]
@@ -265,21 +269,43 @@ size_flags_horizontal = 0
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="Generate_Btn" type="Button" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Generate_Btn_Container/Button_Container"]
+layout_mode = 2
+text = "Generate"
+
 [node name="Right" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Generate_Btn_Container/Button_Container"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="Test_Btn_Container" type="MarginContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer"]
+layout_mode = 2
+theme = ExtResource("1_uumgm")
+
+[node name="Button_Container" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container"]
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="Left" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container/Button_Container"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Test_Btn" type="Button" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container/Button_Container"]
+layout_mode = 2
+text = "Run Test"
+
+[node name="Right" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container/Button_Container"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Num_Tests" type="SpinBox" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container/Button_Container"]
+layout_mode = 2
+max_value = 1000.0
+value = 10.0
 
 [node name="Right" type="VBoxContainer" parent="CanvasLayer/HSplitter"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 1.25
-
-[node name="Generate_Btn" type="Button" parent="CanvasLayer"]
-offset_left = 36.0
-offset_top = 295.0
-offset_right = 188.0
-offset_bottom = 348.0
-text = "Generate"
 
 [node name="Camera" type="Camera2D" parent="."]
 position = Vector2(960, 545)
@@ -293,4 +319,5 @@ tile_set = ExtResource("2_uumgm")
 
 [node name="Gen_Alg_Holder" type="Node2D" parent="."]
 
-[connection signal="pressed" from="CanvasLayer/Generate_Btn" to="CanvasLayer" method="_on_generate_btn_pressed"]
+[connection signal="pressed" from="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Generate_Btn_Container/Button_Container/Generate_Btn" to="CanvasLayer" method="_on_generate_btn_pressed"]
+[connection signal="pressed" from="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container/Button_Container/Test_Btn" to="CanvasLayer" method="_on_test_btn_pressed"]

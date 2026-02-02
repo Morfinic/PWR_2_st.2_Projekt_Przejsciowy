@@ -7,7 +7,7 @@ class_name Genetic
 
 var level_size
 var pop_size: int = 30
-var gens: int = 80
+var gens: int = 25
 var mut_rate: float = 0.01
 var cross_rate: float = 0.45
 var elit_count: int = 2
@@ -34,7 +34,7 @@ func generate_level():
 		_eval_fit()
 		var new_pop = _sel_and_breed()
 		pops = new_pop
-		print(\"Generation %d completed\" % i)
+		#print(\"Generation %d completed\" % i)
 	_eval_fit()
 	pops.sort_custom(func(a, b): return a.fitness > b.fitness)
 
