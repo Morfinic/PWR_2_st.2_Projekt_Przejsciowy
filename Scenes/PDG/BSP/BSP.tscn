@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://b5aget88j8kx8"]
+[gd_scene format=3 uid="uid://b5aget88j8kx8"]
 
 [sub_resource type="GDScript" id="GDScript_a5sxg"]
 script/source = "extends Node
@@ -50,7 +50,7 @@ func generate_level():
 	for edge in mst_edges:
 		create_corridor(Vector2i(centers[edge.from]), Vector2i(centers[edge.to]))
 	
-	root_node.clear()
+	#root_node.clear()
 	
 	return map
 
@@ -136,5 +136,5 @@ func add_edge_unique(edges: Array, p1: int, p2: int, centers: PackedVector2Array
 	edges.append(new_edge)
 "
 
-[node name="BSP" type="Node"]
+[node name="BSP" type="Node" unique_id=939457789]
 script = SubResource("GDScript_a5sxg")

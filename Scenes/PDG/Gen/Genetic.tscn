@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://by14pdhds5xd3"]
+[gd_scene format=3 uid="uid://by14pdhds5xd3"]
 
 [sub_resource type="GDScript" id="GDScript_xm48a"]
 script/source = "extends Node
@@ -6,13 +6,12 @@ class_name Genetic
 
 
 var level_size
-var pop_size: int = 30
-var gens: int = 25
+var pop_size: int = 5
+var gens: int = 3
 var mut_rate: float = 0.01
 var cross_rate: float = 0.45
 var elit_count: int = 2
 var floor_target: float = 0.5
-var noise_chance = 0.45
 
 class Pop:
 	var grid: Array = []
@@ -86,37 +85,114 @@ func count_walls(x, y, area, grid):
 
 
 func _rand_grid():
+	var rng = RandomNumberGenerator.new()
+	rng.randomize()
+	
 	var grid := []
-	var no_iter = 3
-
 	for x in range(level_size.x):
-		grid.append([])
-		for y in range(level_size.y):
-			grid[x].append(randf() < noise_chance)
+		var column = []
+		column.resize(level_size.y)
+		column.fill(0)
+		grid.append(column)
+	
+	var root = TreeNode.new(Vector2i(1,1), Vector2i(level_size.x-2, level_size.y-2))
+	root.split(4)
+	
+	var leaves = root.return_leaves()
+	for leaf in leaves:
+		var max_w = max(4, leaf.size.x - 2)
+		var max_h = max(4, leaf.size.y - 2)
+		var room_w = rng.randi_range(4, max_w)
+		var room_h = rng.randi_range(4, max_h)
+		var room_x = leaf.position.x + rng.randi_range(1, max(1, leaf.size.x - room_w - 1))
+		var room_y = leaf.position.y + rng.randi_range(1, max(1, leaf.size.y - room_h - 1))
 
-	for i in range(no_iter):
-		var grid_copy = grid.duplicate(true)
+		for x in range(room_x, room_x + room_w):
+			for y in range(room_y, room_y + room_h):
+				if x < level_size.x - 1 and y < level_size.y - 1:
+					grid[x][y] = 1
 
-		for y in range(level_size.y):
-			for x in range(level_size.x):
-				var wall_count = count_walls(x, y, 1, grid_copy)
-				var flood_protocol = count_walls(x, y, 2, grid_copy)
-
-				if grid_copy[x][y]:
-					if i == no_iter - 1:
-						grid_copy[x][y] = 1 if wall_count >= 4 or flood_protocol else 0
-					else:
-						grid_copy[x][y] = 1 if wall_count >= 4 else 0
-				else:
-					grid_copy[x][y] = 1 if wall_count >= 5 else 0
-
-			grid = grid_copy
-
-	for x in level_size.x:
-		for y in level_size.y:
-				grid[x][y] = 1 - grid[x][y]
-
+	_generate_maze(grid, rng)
+	_connect_regions(grid, rng)
+	
 	return grid
+
+
+func _generate_maze(grid: Array, rng: RandomNumberGenerator):
+	var dirs = [
+		Vector2i(0, -2), Vector2i(0, 2), Vector2i(-2, 0), Vector2i(2, 0)
+	]
+	
+	for x in range(1, level_size.x-1, 2):
+		for y in range(1, level_size.y-1, 2):
+			if _can_start_maze(grid, x, y):
+				_carve_lane(Vector2i(x, y), grid, rng, dirs)
+
+
+func _can_start_maze(grid: Array, x: int, y: int) -> bool:
+	if grid[x][y] != 0: return false
+
+	for dx in range(-1, 2):
+		for dy in range(-1, 2):
+			var nx = x + dx
+			var ny = y + dy
+			if nx >= 0 and nx < level_size.x and ny >= 0 and ny < level_size.y:
+				if grid[nx][ny] == 1:
+					return false
+
+	return true
+
+
+func _carve_lane(start_pos: Vector2i, grid: Array, rng: RandomNumberGenerator, dirs: Array):
+	var stack = [start_pos]
+	grid[start_pos.x][start_pos.y] = 1
+
+	while stack.size() > 0:
+		var pos = stack.back()
+		var unvisited_dirs = []
+
+		for dir in dirs:
+			var npos = pos + dir
+			if npos.x > 0 and npos.x < level_size.x - 1 and npos.y > 0 and npos.y < level_size.y - 1:
+				if grid[npos.x][npos.y] == 0:
+					unvisited_dirs.append(dir)
+
+		if unvisited_dirs.size() > 0:
+			var chosen_dir = unvisited_dirs[rng.randi() % unvisited_dirs.size()]
+			var mid_pos = pos + chosen_dir / 2
+			var next_pos = pos + chosen_dir
+
+			grid[mid_pos.x][mid_pos.y] = 1
+			grid[next_pos.x][next_pos.y] = 1
+			stack.append(next_pos)
+		else:
+			stack.pop_back()
+
+
+func _connect_regions(grid: Array, rng: RandomNumberGenerator):
+	var potential_holes = []
+	# Szukamy ścian, po których przeciwnych stronach jest podłoga (idealne miejsce na przejście)
+	for x in range(1, level_size.x - 1):
+		for y in range(1, level_size.y - 1):
+			if grid[x][y] == 0:
+				var is_horiz = grid[x-1][y] == 1 and grid[x+1][y] == 1 and grid[x][y-1] == 0 and grid[x][y+1] == 0
+				var is_vert = grid[x][y-1] == 1 and grid[x][y+1] == 1 and grid[x-1][y] == 0 and grid[x+1][y] == 0
+				
+				if is_horiz or is_vert:
+					potential_holes.append(Vector2i(x, y))
+
+	# Własna implementacja tasowania Fisher-Yates wspierająca przekazany RNG dla bezpieczeństwa wątków
+	for i in range(potential_holes.size() - 1, 0, -1):
+		var j = rng.randi() % (i + 1)
+		var temp = potential_holes[i]
+		potential_holes[i] = potential_holes[j]
+		potential_holes[j] = temp
+
+	# Przekształcamy ok. 15% takich miejsc w otwarte drzwi (pętle urozmaicające eksplorację)
+	var holes_to_punch = max(1, int(potential_holes.size() * 0.15))
+	for i in range(min(holes_to_punch, potential_holes.size())):
+		var p = potential_holes[i]
+		grid[p.x][p.y] = 1
 
 
 func _eval_fit():
@@ -278,5 +354,5 @@ func _mutate(grid: Array):
 				grid[rx+i][ry+j] = 1
 "
 
-[node name="Genetic" type="Node"]
+[node name="Genetic" type="Node" unique_id=1678565102]
 script = SubResource("GDScript_xm48a")

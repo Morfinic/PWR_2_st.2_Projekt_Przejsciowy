@@ -1,4 +1,4 @@
-extends Node
+extends RefCounted
 class_name TreeNode
 
 
@@ -80,9 +80,9 @@ func split(remaining):
 		right_child.split(remaining - 1)
 
 
-func clear():
-	if left_child:
-		left_child.clear()
-	if right_child:
-		right_child.clear()
-	queue_free()
+#func clear():
+	#if left_child:
+		#left_child.clear()
+	#if right_child:
+		#right_child.clear()
+	#queue_free()
