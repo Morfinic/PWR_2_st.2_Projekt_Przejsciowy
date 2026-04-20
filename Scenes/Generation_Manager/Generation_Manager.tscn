@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=4 uid="uid://dyev4pvpi15t6"]
+[gd_scene format=4 uid="uid://dyev4pvpi15t6"]
 
 [ext_resource type="Theme" uid="uid://c1gwtmfugunqi" path="res://Assets/Generation_Menu.tres" id="1_uumgm"]
 [ext_resource type="TileSet" uid="uid://d3undk2ko1jv" path="res://Assets/TileLayers/MainTiles.tres" id="2_uumgm"]
@@ -62,7 +62,7 @@ func prepare_level_gen(alg_selected, level_size):
 
 	var alg_node = gen_alg_holder.get_child(0)
 
-	map = FuncTimer.measure(alg_node.generate_level, AlgsNames[alg_selected])
+	map = FuncTimer.measure(alg_node.generate_level, AlgsNames[alg_selected], level_size)
 
 	ground.set_cells_terrain_connect(
 		map, 0, 0
@@ -155,13 +155,13 @@ func _process(delta: float) -> void:
 	zoom = Vector2(zoomValue, zoomValue)
 "
 
-[node name="GenerationManager" type="Node2D"]
+[node name="GenerationManager" type="Node2D" unique_id=1741971008]
 script = SubResource("GDScript_1kjex")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="."]
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=492022423]
 script = SubResource("GDScript_q2ugx")
 
-[node name="HSplitter" type="HBoxContainer" parent="CanvasLayer"]
+[node name="HSplitter" type="HBoxContainer" parent="CanvasLayer" unique_id=153403773]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -170,11 +170,11 @@ grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="Left" type="VBoxContainer" parent="CanvasLayer/HSplitter"]
+[node name="Left" type="VBoxContainer" parent="CanvasLayer/HSplitter" unique_id=196968928]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Menu" type="MarginContainer" parent="CanvasLayer/HSplitter/Left"]
+[node name="Menu" type="MarginContainer" parent="CanvasLayer/HSplitter/Left" unique_id=346383579]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/margin_left = 16
@@ -182,43 +182,43 @@ theme_override_constants/margin_top = 16
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 16
 
-[node name="ColorRect" type="ColorRect" parent="CanvasLayer/HSplitter/Left/Menu"]
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer/HSplitter/Left/Menu" unique_id=1231038057]
 layout_mode = 2
 color = Color(0.1254902, 0.1254902, 0.1254902, 1)
 
-[node name="Settings_VContainer" type="VBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect"]
+[node name="Settings_VContainer" type="VBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect" unique_id=954524473]
 layout_mode = 0
 offset_right = 819.785
 offset_bottom = 288.0
 
-[node name="Title_Container" type="MarginContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer"]
+[node name="Title_Container" type="MarginContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer" unique_id=332826277]
 layout_mode = 2
 theme = ExtResource("1_uumgm")
 theme_override_constants/margin_bottom = 8
 
-[node name="Title_String" type="Label" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Title_Container"]
+[node name="Title_String" type="Label" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Title_Container" unique_id=2111937467]
 layout_mode = 2
 size_flags_horizontal = 0
 theme = ExtResource("1_uumgm")
 theme_override_font_sizes/font_size = 48
 text = "Algorithm Settings"
 
-[node name="Alg_Select" type="MarginContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer"]
+[node name="Alg_Select" type="MarginContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer" unique_id=388536126]
 layout_mode = 2
 theme = ExtResource("1_uumgm")
 theme_override_constants/margin_top = 8
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select"]
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select" unique_id=1952368850]
 layout_mode = 2
 alignment = 1
 
-[node name="Alg_Select_String" type="Label" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer"]
+[node name="Alg_Select_String" type="Label" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer" unique_id=1752373652]
 layout_mode = 2
 theme = ExtResource("1_uumgm")
 text = "Algorithms Option"
 vertical_alignment = 1
 
-[node name="Algorithm_Select" type="OptionButton" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer"]
+[node name="Algorithm_Select" type="OptionButton" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer" unique_id=1896799790]
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 4
@@ -236,88 +236,88 @@ popup/item_3/id = 3
 popup/item_4/text = "Genetic"
 popup/item_4/id = 4
 
-[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer" unique_id=1593128161]
 layout_mode = 2
 
-[node name="Width" type="Label" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer/HBoxContainer"]
+[node name="Width" type="Label" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer/HBoxContainer" unique_id=1887196783]
 layout_mode = 2
 text = "Width: "
 
-[node name="Width_Edit" type="SpinBox" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer/HBoxContainer"]
+[node name="Width_Edit" type="SpinBox" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer/HBoxContainer" unique_id=1178534242]
 layout_mode = 2
 max_value = 1000.0
 value = 25.0
 
-[node name="Height" type="Label" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer/HBoxContainer"]
+[node name="Height" type="Label" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer/HBoxContainer" unique_id=242496283]
 layout_mode = 2
 text = "Height: "
 
-[node name="Height_Edit" type="SpinBox" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer/HBoxContainer"]
+[node name="Height_Edit" type="SpinBox" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Alg_Select/VBoxContainer/HBoxContainer" unique_id=1645576465]
 layout_mode = 2
 max_value = 1000.0
 value = 25.0
 
-[node name="Generate_Btn_Container" type="MarginContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer"]
+[node name="Generate_Btn_Container" type="MarginContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer" unique_id=1831405496]
 layout_mode = 2
 theme = ExtResource("1_uumgm")
 
-[node name="Button_Container" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Generate_Btn_Container"]
+[node name="Button_Container" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Generate_Btn_Container" unique_id=1770972131]
 layout_mode = 2
 size_flags_horizontal = 0
 
-[node name="Left" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Generate_Btn_Container/Button_Container"]
+[node name="Left" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Generate_Btn_Container/Button_Container" unique_id=1753924154]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Generate_Btn" type="Button" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Generate_Btn_Container/Button_Container"]
+[node name="Generate_Btn" type="Button" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Generate_Btn_Container/Button_Container" unique_id=705969470]
 layout_mode = 2
 text = "Generate"
 
-[node name="Right" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Generate_Btn_Container/Button_Container"]
+[node name="Right" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Generate_Btn_Container/Button_Container" unique_id=382954871]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Test_Btn_Container" type="MarginContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer"]
+[node name="Test_Btn_Container" type="MarginContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer" unique_id=1606458551]
 layout_mode = 2
 theme = ExtResource("1_uumgm")
 
-[node name="Button_Container" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container"]
+[node name="Button_Container" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container" unique_id=530642124]
 layout_mode = 2
 size_flags_horizontal = 0
 
-[node name="Left" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container/Button_Container"]
+[node name="Left" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container/Button_Container" unique_id=1156677379]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Test_Btn" type="Button" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container/Button_Container"]
+[node name="Test_Btn" type="Button" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container/Button_Container" unique_id=1349067601]
 layout_mode = 2
 text = "Run Test"
 
-[node name="Right" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container/Button_Container"]
+[node name="Right" type="HBoxContainer" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container/Button_Container" unique_id=327460066]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Num_Tests" type="SpinBox" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container/Button_Container"]
+[node name="Num_Tests" type="SpinBox" parent="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container/Button_Container" unique_id=1503673533]
 layout_mode = 2
 max_value = 1000.0
 value = 10.0
 
-[node name="Right" type="VBoxContainer" parent="CanvasLayer/HSplitter"]
+[node name="Right" type="VBoxContainer" parent="CanvasLayer/HSplitter" unique_id=47337050]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 1.25
 
-[node name="Camera" type="Camera2D" parent="."]
+[node name="Camera" type="Camera2D" parent="." unique_id=436399090]
 position = Vector2(960, 545)
 script = SubResource("GDScript_uumgm")
 
-[node name="TileLayerHolder" type="Node2D" parent="."]
+[node name="TileLayerHolder" type="Node2D" parent="." unique_id=1038127233]
 
-[node name="Ground" type="TileMapLayer" parent="TileLayerHolder"]
+[node name="Ground" type="TileMapLayer" parent="TileLayerHolder" unique_id=1397087419]
 tile_map_data = PackedByteArray("AAAUABIAAAACAAIAAAAUABEAAAACAAEAAAAUABAAAAACAAEAAAAUAA8AAAACAAEAAAAUAA4AAAACAAEAAAAUAA0AAAACAAEAAAAUAAwAAAACAAEAAAAUAAsAAAACAAEAAAAUAAoAAAACAAEAAAAUAAkAAAACAAEAAAAUAAgAAAACAAEAAAAUAAcAAAACAAEAAAAUAAYAAAACAAEAAAAUAAUAAAACAAEAAAAUAAQAAAACAAEAAAAUAAMAAAACAAAAAAATABIAAAABAAIAAAATABEAAAABAAEAAAATABAAAAABAAEAAAATAA8AAAABAAEAAAATAA4AAAABAAEAAAATAA0AAAABAAEAAAATAAwAAAABAAEAAAATAAsAAAABAAEAAAATAAoAAAABAAEAAAATAAkAAAABAAEAAAATAAgAAAABAAEAAAATAAcAAAABAAEAAAATAAYAAAABAAEAAAATAAUAAAABAAEAAAATAAQAAAABAAEAAAATAAMAAAABAAAAAAASABIAAAABAAIAAAASABEAAAABAAEAAAASABAAAAABAAEAAAASAA8AAAABAAEAAAASAA4AAAABAAEAAAASAA0AAAABAAEAAAASAAwAAAABAAEAAAASAAsAAAABAAEAAAASAAoAAAABAAEAAAASAAkAAAABAAEAAAASAAgAAAABAAEAAAASAAcAAAABAAEAAAASAAYAAAABAAEAAAASAAUAAAABAAEAAAASAAQAAAABAAEAAAASAAMAAAABAAAAAAARABIAAAABAAIAAAARABEAAAABAAEAAAARABAAAAABAAEAAAARAA8AAAABAAEAAAARAA4AAAABAAEAAAARAA0AAAABAAEAAAARAAwAAAABAAEAAAARAAsAAAABAAEAAAARAAoAAAABAAEAAAARAAkAAAABAAEAAAARAAgAAAABAAEAAAARAAcAAAABAAEAAAARAAYAAAABAAEAAAARAAUAAAABAAEAAAARAAQAAAABAAEAAAARAAMAAAABAAAAAAAQABIAAAABAAIAAAAQABEAAAABAAEAAAAQABAAAAABAAEAAAAQAA8AAAABAAEAAAAQAA4AAAABAAEAAAAQAA0AAAABAAEAAAAQAAwAAAABAAEAAAAQAAsAAAABAAEAAAAQAAoAAAABAAEAAAAQAAkAAAABAAEAAAAQAAgAAAABAAEAAAAQAAcAAAABAAEAAAAQAAYAAAABAAEAAAAQAAUAAAABAAEAAAAQAAQAAAABAAEAAAAQAAMAAAABAAAAAAAPABIAAAABAAIAAAAPABEAAAABAAEAAAAPABAAAAABAAEAAAAPAA8AAAABAAEAAAAPAA4AAAABAAEAAAAPAA0AAAABAAEAAAAPAAwAAAABAAEAAAAPAAsAAAABAAEAAAAPAAoAAAABAAEAAAAPAAkAAAABAAEAAAAPAAgAAAABAAEAAAAPAAcAAAABAAEAAAAPAAYAAAABAAEAAAAPAAUAAAABAAEAAAAPAAQAAAABAAEAAAAPAAMAAAABAAAAAAAOABIAAAABAAIAAAAOABEAAAABAAEAAAAOABAAAAABAAEAAAAOAA8AAAABAAEAAAAOAA4AAAABAAEAAAAOAA0AAAABAAEAAAAOAAwAAAABAAEAAAAOAAsAAAABAAEAAAAOAAoAAAABAAEAAAAOAAkAAAABAAEAAAAOAAgAAAABAAEAAAAOAAcAAAABAAEAAAAOAAYAAAABAAEAAAAOAAUAAAABAAEAAAAOAAQAAAABAAEAAAAOAAMAAAABAAAAAAANABIAAAABAAIAAAANABEAAAABAAEAAAANABAAAAABAAEAAAANAA8AAAABAAEAAAANAA4AAAABAAEAAAANAA0AAAABAAEAAAANAAwAAAABAAEAAAANAAsAAAABAAEAAAANAAoAAAABAAEAAAANAAkAAAABAAEAAAANAAgAAAABAAEAAAANAAcAAAABAAEAAAANAAYAAAABAAEAAAANAAUAAAABAAEAAAANAAQAAAABAAEAAAANAAMAAAABAAAAAAAMABIAAAABAAIAAAAMABEAAAABAAEAAAAMABAAAAABAAEAAAAMAA8AAAABAAEAAAAMAA4AAAABAAEAAAAMAA0AAAABAAEAAAAMAAwAAAABAAEAAAAMAAsAAAABAAEAAAAMAAoAAAABAAEAAAAMAAkAAAABAAEAAAAMAAgAAAABAAEAAAAMAAcAAAABAAEAAAAMAAYAAAABAAEAAAAMAAUAAAABAAEAAAAMAAQAAAABAAEAAAAMAAMAAAABAAAAAAALABIAAAABAAIAAAALABEAAAABAAEAAAALABAAAAABAAEAAAALAA8AAAABAAEAAAALAA4AAAABAAEAAAALAA0AAAABAAEAAAALAAwAAAABAAEAAAALAAsAAAABAAEAAAALAAoAAAABAAEAAAALAAkAAAABAAEAAAALAAgAAAABAAEAAAALAAcAAAABAAEAAAALAAYAAAABAAEAAAALAAUAAAABAAEAAAALAAQAAAABAAEAAAALAAMAAAABAAAAAAAKABIAAAABAAIAAAAKABEAAAABAAEAAAAKABAAAAABAAEAAAAKAA8AAAABAAEAAAAKAA4AAAABAAEAAAAKAA0AAAABAAEAAAAKAAwAAAABAAEAAAAKAAsAAAABAAEAAAAKAAoAAAABAAEAAAAKAAkAAAABAAEAAAAKAAgAAAABAAEAAAAKAAcAAAABAAEAAAAKAAYAAAABAAEAAAAKAAUAAAABAAEAAAAKAAQAAAABAAEAAAAKAAMAAAABAAAAAAAJABIAAAABAAIAAAAJABEAAAABAAEAAAAJABAAAAABAAEAAAAJAA8AAAABAAEAAAAJAA4AAAABAAEAAAAJAA0AAAABAAEAAAAJAAwAAAABAAEAAAAJAAsAAAABAAEAAAAJAAoAAAABAAEAAAAJAAkAAAABAAEAAAAJAAgAAAABAAEAAAAJAAcAAAABAAEAAAAJAAYAAAABAAEAAAAJAAUAAAABAAEAAAAJAAQAAAABAAEAAAAJAAMAAAABAAAAAAAIABIAAAABAAIAAAAIABEAAAABAAEAAAAIABAAAAABAAEAAAAIAA8AAAABAAEAAAAIAA4AAAABAAEAAAAIAA0AAAABAAEAAAAIAAwAAAABAAEAAAAIAAsAAAABAAEAAAAIAAoAAAABAAEAAAAIAAkAAAABAAEAAAAIAAgAAAABAAEAAAAIAAcAAAABAAEAAAAIAAYAAAABAAEAAAAIAAUAAAABAAEAAAAIAAQAAAABAAEAAAAIAAMAAAABAAAAAAAHABIAAAABAAIAAAAHABEAAAABAAEAAAAHABAAAAABAAEAAAAHAA8AAAABAAEAAAAHAA4AAAABAAEAAAAHAA0AAAABAAEAAAAHAAwAAAABAAEAAAAHAAsAAAABAAEAAAAHAAoAAAABAAEAAAAHAAkAAAABAAEAAAAHAAgAAAABAAEAAAAHAAcAAAABAAEAAAAHAAYAAAABAAEAAAAHAAUAAAABAAEAAAAHAAQAAAABAAEAAAAHAAMAAAABAAAAAAAGABIAAAABAAIAAAAGABEAAAABAAEAAAAGABAAAAABAAEAAAAGAA8AAAABAAEAAAAGAA4AAAABAAEAAAAGAA0AAAABAAEAAAAGAAwAAAABAAEAAAAGAAsAAAABAAEAAAAGAAoAAAABAAEAAAAGAAkAAAABAAEAAAAGAAgAAAABAAEAAAAGAAcAAAABAAEAAAAGAAYAAAABAAEAAAAGAAUAAAABAAEAAAAGAAQAAAABAAEAAAAGAAMAAAABAAAAAAAFABIAAAABAAIAAAAFABEAAAABAAEAAAAFABAAAAABAAEAAAAFAA8AAAABAAEAAAAFAA4AAAABAAEAAAAFAA0AAAABAAEAAAAFAAwAAAABAAEAAAAFAAsAAAABAAEAAAAFAAoAAAABAAEAAAAFAAkAAAABAAEAAAAFAAgAAAABAAEAAAAFAAcAAAABAAEAAAAFAAYAAAABAAEAAAAFAAUAAAABAAEAAAAFAAQAAAABAAEAAAAFAAMAAAABAAAAAAAEABIAAAABAAIAAAAEABEAAAABAAEAAAAEABAAAAABAAEAAAAEAA8AAAABAAEAAAAEAA4AAAABAAEAAAAEAA0AAAABAAEAAAAEAAwAAAABAAEAAAAEAAsAAAABAAEAAAAEAAoAAAABAAEAAAAEAAkAAAABAAEAAAAEAAgAAAABAAEAAAAEAAcAAAABAAEAAAAEAAYAAAABAAEAAAAEAAUAAAABAAEAAAAEAAQAAAABAAEAAAAEAAMAAAABAAAAAAADABIAAAABAAIAAAADABEAAAABAAEAAAADABAAAAABAAEAAAADAA8AAAABAAEAAAADAA4AAAABAAEAAAADAA0AAAABAAEAAAADAAwAAAABAAEAAAADAAsAAAABAAEAAAADAAoAAAABAAEAAAADAAkAAAABAAEAAAADAAgAAAABAAEAAAADAAcAAAABAAEAAAADAAYAAAABAAEAAAADAAUAAAABAAEAAAADAAQAAAABAAEAAAADAAMAAAABAAAAAAACABIAAAAAAAIAAAACABEAAAAAAAEAAAACABAAAAAAAAEAAAACAA8AAAAAAAEAAAACAA4AAAAAAAEAAAACAA0AAAAAAAEAAAACAAwAAAAAAAEAAAACAAsAAAAAAAEAAAACAAoAAAAAAAEAAAACAAkAAAAAAAEAAAACAAgAAAAAAAEAAAACAAcAAAAAAAEAAAACAAYAAAAAAAEAAAACAAUAAAAAAAEAAAACAAQAAAAAAAEAAAACAAMAAAAAAAAAAAA=")
 tile_set = ExtResource("2_uumgm")
 
-[node name="Gen_Alg_Holder" type="Node2D" parent="."]
+[node name="Gen_Alg_Holder" type="Node2D" parent="." unique_id=1451236202]
 
 [connection signal="pressed" from="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Generate_Btn_Container/Button_Container/Generate_Btn" to="CanvasLayer" method="_on_generate_btn_pressed"]
 [connection signal="pressed" from="CanvasLayer/HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container/Button_Container/Test_Btn" to="CanvasLayer" method="_on_test_btn_pressed"]

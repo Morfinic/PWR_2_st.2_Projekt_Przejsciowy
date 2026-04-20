@@ -14,18 +14,124 @@ func start():
 func stop(algName: String):
 	var stopFunc = Time.get_ticks_usec()
 	var duration = (stopFunc - startFunc) / 1000.0
-	#print(\"%s | Czas: %.3f ms\" % [algName, duration])
-	print(\"%.3f\" % duration)
 	
 	return duration
 
 
-func measure(function: Callable, algName: String = \"<>\"):
+func measure(function: Callable, algName: String = \"<>\", level_size := Vector2i()):
 	start()
 	var result = function.call()
 	var time = stop(algName)
 	
+	_save_to_file(algName, level_size, time, result)
+	
 	return result
+
+
+func _save_to_file
+(
+	algName: String, level_size: Vector2i, 
+	time: float, map_data: Variant
+):
+	var datetime = Time.get_datetime_string_from_system().replace(\":\", \"-\").replace(\"T\", \"_\")
+	var file_name = \"res://Pomiary/%s_%dx%d_%s.txt\" % [algName, level_size.x, level_size.y, datetime]
+	var open_ratio: float = _calc_open_space_ratio(map_data, level_size)
+	var connectivity: Dictionary = _calc_conn(map_data)
+	
+	var file = FileAccess.open(file_name, FileAccess.WRITE)
+	
+	if file:
+		file.store_line(\"Algorytm: \" + algName + \" | Rozmiar: \" + str(level_size.x) + \"x\" + str(level_size.y))
+		file.store_line(\"Czas generacji (ms):\")
+		file.store_line(str(time))
+		file.store_line(\"Wygenerowana mapa:\")
+		file.store_line(str(map_data))
+		file.store_line(\"OSR:\")
+		file.store_line(\"Otwarte komorki  : %d\" % map_data.size())
+		file.store_line(\"Wszystkie komorki: %d\" % (level_size.x * level_size.y))
+		file.store_line(\"OSR: %.4f  (%.1f%%)\" % [open_ratio, open_ratio * 100.0])
+		file.store_line(\"Connectivity:\")
+		file.store_line(\"Spojna: %s\" % (\"TAK\" if connectivity[\"connected\"] else \"NIE\"))
+		file.store_line(\"Liczba komponentow: %d\" % connectivity[\"components\"])
+		file.store_line(\"Najwiekszy komp.: %d komorek\" % connectivity[\"largest_component\"])
+		file.store_line(\"Pokrycie (largest) : %.4f  (%.1f%%)\" % [connectivity[\"connectivity_ratio\"], connectivity[\"connectivity_ratio\"] * 100.0])
+		
+		file.close()
+		
+		#print(\"Zapisano log do: \", ProjectSettings.globalize_path(file_name))
+	else:
+		push_error(\"Nie udało się utworzyć pliku: \" + file_name)
+
+
+func _calc_open_space_ratio(cells: Array, level_size: Vector2i) -> float:
+	var total := level_size.x * level_size.y
+	if total == 0:
+		return 0.0
+	
+	return float(cells.size()) / float(total)
+
+
+func _calc_conn(cells: Array) -> Dictionary:
+	if cells.is_empty():
+		return {
+			\"connected\": true,
+			\"components\": 0,
+			\"largest_component\": 0,
+			\"connectivity_ratio\": 1.0
+		}
+	
+	var cell_map := {}
+	var typed_cells: Array[Vector2i] = []
+	
+	for c in cells:
+		var v_int = Vector2i(c)
+		cell_map[v_int] = true
+		typed_cells.append(v_int)
+	
+	var visited := {}
+	var component_list: Array[int] = []
+	
+	for start_cell in typed_cells:
+		if visited.has(start_cell):
+			continue
+		
+		var current_comp_size = 0
+		var stack: Array[Vector2i] = [start_cell]
+		visited[start_cell] = true
+		
+		while not stack.is_empty():
+			var cur = stack.pop_back()
+			current_comp_size += 1
+			
+			for neighbour in _four_neighbors(cur):
+				if cell_map.has(neighbour) and not visited.has(neighbour):
+					visited[neighbour] = true
+					stack.append(neighbour)
+		
+		component_list.append(current_comp_size)
+
+	var total_comps =  component_list.size()
+	var largest = component_list.max() if total_comps > 0 else 0
+
+	return {
+			\"connected\": total_comps == 1,
+			\"components\": total_comps,
+			\"largest_component\": largest,
+			\"connectivity_ratio\": float(largest) / float(typed_cells.size())
+		}
+
+
+func _four_neighbors(cell: Vector2i) -> Array:
+	return [
+		cell + Vector2i.UP,
+		cell + Vector2i.DOWN,
+		cell + Vector2i.LEFT,
+		cell + Vector2i.UP,
+		cell + Vector2i.UP + Vector2i.LEFT,
+		cell + Vector2i.UP + Vector2i.RIGHT,
+		cell + Vector2i.DOWN + Vector2i.LEFT,
+		cell + Vector2i.DOWN + Vector2i.RIGHT
+	]
 "
 
 [node name="Timer" type="Node" unique_id=489265424]
