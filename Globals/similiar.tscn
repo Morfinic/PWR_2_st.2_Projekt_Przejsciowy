@@ -15,12 +15,29 @@ func reset():
 	map_arrays = []
 
 
-func calculate_ncd(map_a: Array, map_b: Array) -> float:
-	map_a.sort()
-	map_b.sort()
+func _map_to_binary_string(map_array: Array) -> String:
+	var lookup := {}
+	for cell in map_array:
+		lookup[Vector2i(cell)] = true
+
+	var chars := PackedStringArray()
 	
-	var bytes_a: PackedByteArray = var_to_bytes(map_a)
-	var bytes_b: PackedByteArray = var_to_bytes(map_b)
+	for y in range(map_size.y):
+		for x in range(map_size.x):
+			if lookup.has(Vector2i(x, y)):
+				chars.append(\"1\")
+			else:
+				chars.append(\"0\")
+				
+	return \"\".join(chars)
+
+
+func calculate_ncd(map_a: Array, map_b: Array) -> float:
+	var str_a = _map_to_binary_string(map_a)
+	var str_b = _map_to_binary_string(map_b)
+	
+	var bytes_a: PackedByteArray = str_a.to_utf8_buffer()
+	var bytes_b: PackedByteArray = str_b.to_utf8_buffer()
 	
 	var c_a = float(bytes_a.compress(FileAccess.COMPRESSION_ZSTD).size())
 	var c_b = float(bytes_b.compress(FileAccess.COMPRESSION_ZSTD).size())
@@ -32,6 +49,7 @@ func calculate_ncd(map_a: Array, map_b: Array) -> float:
 	
 	var ncd_value = (c_ab - min(c_a, c_b)) / max(c_a, c_b)
 	
+	# min(ncd_value, 1.0)
 	return ncd_value
 
 
@@ -55,7 +73,7 @@ func _save_summary_to_csv(avg_dist: float):
 	var file = FileAccess.open(path, FileAccess.READ_WRITE if file_exists else FileAccess.WRITE)
 	
 	if not file_exists:
-		file.store_line(\"Algorytm;Rozmiar;Srednia_NCD_Dystans;Unikalnosc_Procent\")
+		file.store_line(\"Algorytm;Rozmiar;Srednia_NCD;Zroznicowanie%\")
 	
 	file.seek_end()
 	file.store_line(\"%s;%dx%d;%.4f;%.1f%%\" % [alg_name, map_size.x, map_size.y, avg_dist, avg_dist * 100.0])

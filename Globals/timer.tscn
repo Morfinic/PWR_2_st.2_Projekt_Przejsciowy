@@ -34,40 +34,27 @@ func _save_to_file
 	algName: String, level_size: Vector2i, 
 	time: float, map_data: Variant
 ):
-	var datetime = Time.get_datetime_string_from_system().replace(\":\", \"-\").replace(\"T\", \"_\")
-	var unique_id = Time.get_ticks_usec()
-	var file_name = \"res://Pomiary/%s_%dx%d_%s[%d].txt\" % [algName, level_size.x, level_size.y, datetime, unique_id]
+	var path = \"res://Pomiary/%s_%dx%d.csv\" % [algName, level_size.x, level_size.y]
 	
 	var open_ratio: float = _calc_open_space_ratio(map_data, level_size)
 	var connectivity: Dictionary = _calc_conn(map_data)
 	var entropy: float = calculate_entropy(map_data)
 	
-	var file = FileAccess.open(file_name, FileAccess.WRITE)
+	var file_exists = FileAccess.file_exists(path)
+	var file = FileAccess.open(path, FileAccess.READ_WRITE if file_exists else FileAccess.WRITE)
 	
-	if file:
-		file.store_line(\"Algorytm: \" + algName + \" | Rozmiar: \" + str(level_size.x) + \"x\" + str(level_size.y))
-		file.store_line(\"Czas generacji (ms):\")
-		file.store_line(str(time))
-		file.store_line(\"Wygenerowana mapa:\")
-		file.store_line(str(map_data))
-		file.store_line(\"OSR:\")
-		file.store_line(\"Otwarte komorki  : %d\" % map_data.size())
-		file.store_line(\"Wszystkie komorki: %d\" % (level_size.x * level_size.y))
-		file.store_line(\"OSR: %.4f  (%.1f%%)\" % [open_ratio, open_ratio * 100.0])
-		file.store_line(\"Connectivity:\")
-		file.store_line(\"Spojna: %s\" % (\"TAK\" if connectivity[\"connected\"] else \"NIE\"))
-		file.store_line(\"Liczba komponentow: %d\" % connectivity[\"components\"])
-		file.store_line(\"Najwiekszy komp.: %d komorek\" % connectivity[\"largest_component\"])
-		file.store_line(\"Pokrycie (largest) : %.4f  (%.1f%%)\" % [connectivity[\"connectivity_ratio\"], connectivity[\"connectivity_ratio\"] * 100.0])
-		file.store_line(\"Entropia\")
-		file.store_line(\"H = %.4f bitow  (max teoretyczne ~3.17 b)\" % entropy)
-		
-		file.close()
-		
-		#print(\"Zapisano log do: \", ProjectSettings.globalize_path(file_name))
-	else:
-		push_error(\"Nie udało się utworzyć pliku: \" + file_name)
-
+	if not file_exists:
+		file.store_line(\"Czas generacji;Liczba komorek;Otwarte komorki;OSR;OSR%;Spojnosc;Liczba sektorow;Rozmiar najwiekszego sektora;Pokrycie;Pokrycie%;Entropia (max ~3.17 b)\")
+	
+	file.seek_end()
+	file.store_line(
+		\"%.4f;%d;%d;%.4f;%.1f%%;%s;%d;%d;%.4f;%.1f%%;%.4f\" %
+		[time, level_size.x * level_size.y, map_data.size(), open_ratio, open_ratio * 100.0,
+		\"TAK\" if connectivity[\"connected\"] else \"NIE\", connectivity[\"components\"], connectivity[\"largest_component\"],
+		connectivity[\"connectivity_ratio\"], connectivity[\"connectivity_ratio\"] * 100.0, entropy]
+	)
+	file.close()
+	
 
 func _calc_open_space_ratio(cells: Array, level_size: Vector2i) -> float:
 	var total := level_size.x * level_size.y
