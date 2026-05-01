@@ -63,6 +63,9 @@ func prepare_level_gen(alg_selected, level_size):
 	var alg_node = gen_alg_holder.get_child(0)
 
 	map = FuncTimer.measure(alg_node.generate_level, AlgsNames[alg_selected], level_size)
+	
+	if Similiar.alg_name == \"\": Similiar.alg_name = AlgsNames[alg_selected]
+	if Similiar.map_size == Vector2i(0, 0): Similiar.map_size = level_size
 
 	ground.set_cells_terrain_connect(
 		map, 0, 0
@@ -111,9 +114,13 @@ func _on_generate_btn_pressed() -> void:
 
 func _on_test_btn_pressed() -> void:
 	var numTests = num_tests.value
+	Similiar.reset()
+
 	for i in range(numTests):
 		_on_generate_btn_pressed()
 		await get_tree().create_timer(0.05).timeout
+
+	Similiar.analyze_algorithm_diversity()
 "
 
 [sub_resource type="GDScript" id="GDScript_uumgm"]

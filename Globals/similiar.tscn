@@ -1,0 +1,66 @@
+[gd_scene format=3 uid="uid://cxl267dq6aovy"]
+
+[sub_resource type="GDScript" id="GDScript_35fqd"]
+script/source = "extends Node
+
+
+var alg_name: String = \"\"
+var map_size := Vector2i(0, 0)
+var map_arrays = []
+
+
+func reset():
+	alg_name = \"\"
+	map_size = Vector2i(0, 0)
+	map_arrays = []
+
+
+func calculate_ncd(map_a: Array, map_b: Array) -> float:
+	map_a.sort()
+	map_b.sort()
+	
+	var bytes_a: PackedByteArray = var_to_bytes(map_a)
+	var bytes_b: PackedByteArray = var_to_bytes(map_b)
+	
+	var c_a = float(bytes_a.compress(FileAccess.COMPRESSION_ZSTD).size())
+	var c_b = float(bytes_b.compress(FileAccess.COMPRESSION_ZSTD).size())
+	
+	var bytes_combined := PackedByteArray()
+	bytes_combined.append_array(bytes_a)
+	bytes_combined.append_array(bytes_b)
+	var c_ab = float(bytes_combined.compress(FileAccess.COMPRESSION_ZSTD).size())
+	
+	var ncd_value = (c_ab - min(c_a, c_b)) / max(c_a, c_b)
+	
+	return ncd_value
+
+
+func analyze_algorithm_diversity():
+	var ncd_results = []
+	
+	for i in range(map_arrays.size()):
+		for j in range(i + 1, map_arrays.size()):
+			var dist = calculate_ncd(map_arrays[i], map_arrays[j])
+			ncd_results.append(dist)
+	
+	var total = 0.0
+	for val in ncd_results: total += val
+	var avg_ncd = total / ncd_results.size()
+	
+	_save_summary_to_csv(avg_ncd)
+
+func _save_summary_to_csv(avg_dist: float):
+	var path = \"res://Pomiary/similarity_report.csv\"
+	var file_exists = FileAccess.file_exists(path)
+	var file = FileAccess.open(path, FileAccess.READ_WRITE if file_exists else FileAccess.WRITE)
+	
+	if not file_exists:
+		file.store_line(\"Algorytm;Rozmiar;Srednia_NCD_Dystans;Unikalnosc_Procent\")
+	
+	file.seek_end()
+	file.store_line(\"%s;%dx%d;%.4f;%.1f%%\" % [alg_name, map_size.x, map_size.y, avg_dist, avg_dist * 100.0])
+	file.close()
+"
+
+[node name="Similiar" type="Node" unique_id=297014752]
+script = SubResource("GDScript_35fqd")

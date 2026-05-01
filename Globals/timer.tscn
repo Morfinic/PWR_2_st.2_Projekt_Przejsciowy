@@ -24,6 +24,7 @@ func measure(function: Callable, algName: String = \"<>\", level_size := Vector2
 	var time = stop(algName)
 	
 	_save_to_file(algName, level_size, time, result)
+	Similiar.map_arrays.append(result)
 	
 	return result
 
@@ -34,9 +35,12 @@ func _save_to_file
 	time: float, map_data: Variant
 ):
 	var datetime = Time.get_datetime_string_from_system().replace(\":\", \"-\").replace(\"T\", \"_\")
-	var file_name = \"res://Pomiary/%s_%dx%d_%s.txt\" % [algName, level_size.x, level_size.y, datetime]
+	var unique_id = Time.get_ticks_usec()
+	var file_name = \"res://Pomiary/%s_%dx%d_%s[%d].txt\" % [algName, level_size.x, level_size.y, datetime, unique_id]
+	
 	var open_ratio: float = _calc_open_space_ratio(map_data, level_size)
 	var connectivity: Dictionary = _calc_conn(map_data)
+	var entropy: float = calculate_entropy(map_data)
 	
 	var file = FileAccess.open(file_name, FileAccess.WRITE)
 	
@@ -55,6 +59,8 @@ func _save_to_file
 		file.store_line(\"Liczba komponentow: %d\" % connectivity[\"components\"])
 		file.store_line(\"Najwiekszy komp.: %d komorek\" % connectivity[\"largest_component\"])
 		file.store_line(\"Pokrycie (largest) : %.4f  (%.1f%%)\" % [connectivity[\"connectivity_ratio\"], connectivity[\"connectivity_ratio\"] * 100.0])
+		file.store_line(\"Entropia\")
+		file.store_line(\"H = %.4f bitow  (max teoretyczne ~3.17 b)\" % entropy)
 		
 		file.close()
 		
@@ -126,12 +132,44 @@ func _four_neighbors(cell: Vector2i) -> Array:
 		cell + Vector2i.UP,
 		cell + Vector2i.DOWN,
 		cell + Vector2i.LEFT,
-		cell + Vector2i.UP,
-		cell + Vector2i.UP + Vector2i.LEFT,
-		cell + Vector2i.UP + Vector2i.RIGHT,
-		cell + Vector2i.DOWN + Vector2i.LEFT,
-		cell + Vector2i.DOWN + Vector2i.RIGHT
+		cell + Vector2i.RIGHT,
 	]
+	
+
+func _eight_neighbors(cell: Vector2i) -> Array:
+	return [
+		cell + Vector2i.UP, cell + Vector2i.DOWN,
+		cell + Vector2i.LEFT, cell + Vector2i.RIGHT,
+		cell + Vector2i(1, 1), cell + Vector2i(1, -1),
+		cell + Vector2i(-1, 1), cell + Vector2i(-1, -1)
+	]
+
+
+func calculate_entropy(cells: Array) -> float:
+	if cells.is_empty():
+		return 0.0
+
+	var cell_set: Dictionary = {}
+	for c in cells:
+		cell_set[Vector2i(c)] = true
+
+	var histogram: Dictionary = {}
+	for cell in cells:
+		var count := 0
+		for neighbor in _eight_neighbors(cell):
+			if cell_set.has(neighbor):
+				count += 1
+		histogram[count] = histogram.get(count, 0) + 1
+
+	# Shannon H = -Σ p(x) * log2(p(x))
+	var total:   float = float(cells.size())
+	var entropy: float = 0.0
+	for cnt in histogram.values():
+		var p: float = cnt / total
+		if p > 0.0:
+			entropy -= p * (log(p) / log(2.0))
+
+	return entropy
 "
 
 [node name="Timer" type="Node" unique_id=489265424]
