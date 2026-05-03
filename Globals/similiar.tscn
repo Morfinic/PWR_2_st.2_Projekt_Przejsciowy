@@ -66,6 +66,10 @@ func analyze_algorithm_diversity():
 	var avg_ncd = total / ncd_results.size()
 	
 	_save_summary_to_csv(avg_ncd)
+	AStar.alg_name = alg_name
+	AStar.map_size = map_size
+	AStar.map_arrays = map_arrays
+	reset()
 
 func _save_summary_to_csv(avg_dist: float):
 	var path = \"res://Pomiary/similarity_report.csv\"

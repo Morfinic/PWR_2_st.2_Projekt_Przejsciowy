@@ -1,0 +1,185 @@
+[gd_scene format=3 uid="uid://8gio1eslkx6q"]
+
+[sub_resource type="GDScript" id="GDScript_7xlya"]
+script/source = "extends Node
+
+
+var alg_name: String = \"\"
+var map_size := Vector2i(0, 0)
+var map_arrays = []
+
+
+func reset():
+	alg_name = \"\"
+	map_size = Vector2i(0, 0)
+	map_arrays = []
+
+
+func _find_corner_points(map_array: Array, map_size: Vector2i) -> Dictionary:
+	var ideal_start = Vector2i(0, 0) # Lewy górny
+	var ideal_target = Vector2i(map_size.x - 1, map_size.y - 1) # Prawy dolny
+	
+	var best_start: Vector2i
+	var best_target: Vector2i
+	
+	var min_dist_start = INF
+	var min_dist_target = INF
+	
+	for cell in map_array:
+		var v_cell = Vector2i(cell)
+		
+		var dist_start = v_cell.distance_squared_to(ideal_start)
+		var dist_target = v_cell.distance_squared_to(ideal_target)
+		
+		if dist_start < min_dist_start:
+			min_dist_start = dist_start
+			best_start = v_cell
+			
+		if dist_target < min_dist_target:
+			min_dist_target = dist_target
+			best_target = v_cell
+			
+	return {\"start\": best_start, \"target\": best_target}
+
+
+func analyze_diversity():
+	var all_trajectories = []
+	
+	for map_data in map_arrays:
+		var points = _find_corner_points(map_data, map_size)
+		
+		var grid = {}
+		for c in map_data: 
+			grid[Vector2i(c)] = true
+			
+		var traj = get_agent_trajectory(points[\"start\"], points[\"target\"], grid)
+		
+		if traj != \"\": 
+			all_trajectories.append(traj)
+		
+		await get_tree().process_frame
+			
+	var edit_distances = []
+	var total_comparisons = 0
+	for i in range(all_trajectories.size()):
+		for j in range(i + 1, all_trajectories.size()):
+			var dist = normalized_edit_distance(all_trajectories[i], all_trajectories[j])
+			edit_distances.append(dist)
+			total_comparisons += 1
+			
+			if total_comparisons % 10 == 0:
+				await get_tree().process_frame
+			
+	var total_dist = 0.0
+	for d in edit_distances: 
+		total_dist += d
+		
+	var avg_diversity = 0.0
+	if edit_distances.size() > 0:
+		avg_diversity = total_dist / float(edit_distances.size())
+		
+	_save_summary_to_csv([avg_diversity])
+
+
+func get_agent_trajectory(start: Vector2i, target: Vector2i, grid: Dictionary) -> String:
+	var pq = PriorityQueue.new()
+	pq.put(start, _heuristic_manhattan(start, target))
+	
+	var in_open_set = {start: true}
+	var closed_set = {} # <--- DODANE: Zabezpiecza przed wchodzeniem w pętle
+	
+	var came_from = {}
+	var g_score = {start: 0.0}
+	
+	while not pq.is_empty():
+		var current = pq.get_item()
+		in_open_set.erase(current)
+		
+		if current == target:
+			return _reconstruct_path_as_string(came_from, current, start)
+			
+		closed_set[current] = true # Oznaczamy węzeł jako ostatecznie zbadany
+		
+		var dirs = {\"G\": Vector2i.UP, \"D\": Vector2i.DOWN, \"L\": Vector2i.LEFT, \"P\": Vector2i.RIGHT}
+		for dir_name in dirs:
+			var neighbor = current + dirs[dir_name]
+			
+			if not grid.has(neighbor): continue
+			if closed_set.has(neighbor): continue # <--- POMIJAMY węzły już zamknięte
+				
+			var tentative_g = g_score[current] + 1.0
+			
+			if tentative_g < g_score.get(neighbor, INF):
+				came_from[neighbor] = {\"node\": current, \"action\": dir_name}
+				g_score[neighbor] = tentative_g
+				
+				var f = tentative_g + _heuristic_manhattan(neighbor, target)
+				
+				if not in_open_set.has(neighbor):
+					in_open_set[neighbor] = true
+					pq.put(neighbor, f)
+					
+	return \"\"
+
+
+func _heuristic_manhattan(a: Vector2i, b: Vector2i) -> float:
+	var dx = abs(a.x - b.x)
+	var dy = abs(a.y - b.y)
+	return float(dx + dy) * 1.001
+
+
+func _reconstruct_path_as_string(came_from: Dictionary, current: Vector2i, start: Vector2i) -> String:
+	var path_actions := PackedStringArray() # Specjalna zoptymalizowana tablica tekstowa
+	var curr = current
+	
+	while curr != start and came_from.has(curr):
+		var data = came_from[curr]
+		path_actions.append(data[\"action\"]) # Append nie tworzy kopii w pamięci
+		curr = data[\"node\"]
+		
+	# Odwracamy tablicę (ponieważ szliśmy od końca)
+	path_actions.reverse()
+	
+	# Łączymy wszystkie litery w jeden String błyskawicznie
+	return \"\".join(path_actions)
+
+
+func normalized_edit_distance(s1: String, s2: String) -> float:
+	if s1.length() == 0 and s2.length() == 0: return 0.0
+	if s1.length() == 0 or s2.length() == 0: return 1.0
+	
+	var row1 = []
+	var row2 = []
+	for i in range(s2.length() + 1):
+		row1.append(i)
+		row2.append(0)
+		
+	for i in range(s1.length()):
+		row2[0] = i + 1
+		for j in range(s2.length()):
+			var cost = 0 if s1[i] == s2[j] else 1
+			row2[j + 1] = min(row2[j] + 1, min(row1[j + 1] + 1, row1[j] + cost))
+		for j in range(row1.size()):
+			row1[j] = row2[j]
+			
+	var raw_distance = row1[s2.length()]
+	var max_len = max(s1.length(), s2.length())
+	
+	return float(raw_distance) / float(max_len)
+
+
+func _save_summary_to_csv(data: Array):
+	var path = \"res://Pomiary/astar_report.csv\"
+	var file_exists = FileAccess.file_exists(path)
+	var file = FileAccess.open(path, FileAccess.READ_WRITE if file_exists else FileAccess.WRITE)
+	
+	if not file_exists:
+		file.store_line(\"Algorytm;Rozmiar;Stopien róznorodności\")
+	
+	file.seek_end()
+	file.store_line(\"%s;%dx%d;%.4f\" % [alg_name, map_size.x, map_size.y, data[0]])
+	file.close()
+"
+
+[node name="AStar" type="Node" unique_id=214099088]
+script = SubResource("GDScript_7xlya")

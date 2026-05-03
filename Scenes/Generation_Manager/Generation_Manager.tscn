@@ -115,12 +115,14 @@ func _on_generate_btn_pressed() -> void:
 func _on_test_btn_pressed() -> void:
 	var numTests = num_tests.value
 	Similiar.reset()
+	AStar.reset()
 
 	for i in range(numTests):
 		_on_generate_btn_pressed()
-		await get_tree().create_timer(0.05).timeout
+		await get_tree().create_timer(0.01).timeout
 
 	Similiar.analyze_algorithm_diversity()
+	AStar.analyze_diversity()
 "
 
 [sub_resource type="GDScript" id="GDScript_uumgm"]
