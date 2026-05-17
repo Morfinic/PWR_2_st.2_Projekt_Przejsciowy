@@ -5,7 +5,7 @@ class_name Walker
 const DIRECTION = [Vector2.RIGHT, Vector2.UP, Vector2.LEFT, Vector2.DOWN]
 
 var position = Vector2.ZERO
-var direction = Vector2.UP
+var direction = DIRECTION.pick_random()
 var border = Rect2()
 var step_history: Array = []
 var steps_since_turn = 0

@@ -31,9 +31,7 @@ func return_leaves():
 
 func split(remaining):
 	var randomizer = RandomNumberGenerator.new()
-	# Dodac wybieranie prametru w menu
 	var split_percent = randomizer.randf_range(0.4,  0.6)
-	# Dodac wybieranie prametru w menu
 	var min_size := Vector2i(5, 5)
 	var split := false
 	var new_size

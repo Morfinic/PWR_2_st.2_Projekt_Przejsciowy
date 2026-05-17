@@ -62,7 +62,7 @@ func prepare_level_gen(alg_selected, level_size):
 
 	var alg_node = gen_alg_holder.get_child(0)
 
-	map = FuncTimer.measure(alg_node.generate_level, AlgsNames[alg_selected], level_size)
+	map = FuncTimer.measure(alg_node.generate_level, AlgsNames[alg_selected], level_size, get_child(0).is_testing)
 	
 	if Similiar.alg_name == \"\": Similiar.alg_name = AlgsNames[alg_selected]
 	if Similiar.map_size == Vector2i(0, 0): Similiar.map_size = level_size
@@ -87,6 +87,9 @@ signal generate_level
 @onready var num_tests: SpinBox = $HSplitter/Left/Menu/ColorRect/Settings_VContainer/Test_Btn_Container/Button_Container/Num_Tests
 
 
+var is_testing: bool = false
+
+
 func _ready() -> void:
 	self.visible = false
 	generate_level.connect(owner.prepare_level_gen)
@@ -103,7 +106,7 @@ func _on_generate_btn_pressed() -> void:
 	var level_size = Vector2i(
 		width_edit.value, height_edit.value
 	)
-
+	
 	generate_level.emit(alg_selected, level_size)
 
 	$\"../Camera\".position = Vector2(
@@ -113,6 +116,8 @@ func _on_generate_btn_pressed() -> void:
 
 
 func _on_test_btn_pressed() -> void:
+	is_testing = true
+	
 	var numTests = num_tests.value
 	Similiar.reset()
 	AStar.reset()
@@ -123,6 +128,7 @@ func _on_test_btn_pressed() -> void:
 
 	Similiar.analyze_algorithm_diversity()
 	AStar.analyze_diversity()
+	is_testing = false
 "
 
 [sub_resource type="GDScript" id="GDScript_uumgm"]
@@ -314,7 +320,7 @@ value = 10.0
 [node name="Right" type="VBoxContainer" parent="CanvasLayer/HSplitter" unique_id=47337050]
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_stretch_ratio = 1.25
+size_flags_stretch_ratio = 2.5
 
 [node name="Camera" type="Camera2D" parent="." unique_id=436399090]
 position = Vector2(960, 545)

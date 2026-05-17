@@ -86,7 +86,7 @@ func get_agent_trajectory(start: Vector2i, target: Vector2i, grid: Dictionary) -
 	pq.put(start, _heuristic_manhattan(start, target))
 	
 	var in_open_set = {start: true}
-	var closed_set = {} # <--- DODANE: Zabezpiecza przed wchodzeniem w pętle
+	var closed_set = {}
 	
 	var came_from = {}
 	var g_score = {start: 0.0}
@@ -98,14 +98,14 @@ func get_agent_trajectory(start: Vector2i, target: Vector2i, grid: Dictionary) -
 		if current == target:
 			return _reconstruct_path_as_string(came_from, current, start)
 			
-		closed_set[current] = true # Oznaczamy węzeł jako ostatecznie zbadany
+		closed_set[current] = true
 		
 		var dirs = {\"G\": Vector2i.UP, \"D\": Vector2i.DOWN, \"L\": Vector2i.LEFT, \"P\": Vector2i.RIGHT}
 		for dir_name in dirs:
 			var neighbor = current + dirs[dir_name]
 			
 			if not grid.has(neighbor): continue
-			if closed_set.has(neighbor): continue # <--- POMIJAMY węzły już zamknięte
+			if closed_set.has(neighbor): continue
 				
 			var tentative_g = g_score[current] + 1.0
 			
@@ -129,18 +129,16 @@ func _heuristic_manhattan(a: Vector2i, b: Vector2i) -> float:
 
 
 func _reconstruct_path_as_string(came_from: Dictionary, current: Vector2i, start: Vector2i) -> String:
-	var path_actions := PackedStringArray() # Specjalna zoptymalizowana tablica tekstowa
+	var path_actions := PackedStringArray()
 	var curr = current
 	
 	while curr != start and came_from.has(curr):
 		var data = came_from[curr]
-		path_actions.append(data[\"action\"]) # Append nie tworzy kopii w pamięci
+		path_actions.append(data[\"action\"])
 		curr = data[\"node\"]
 		
-	# Odwracamy tablicę (ponieważ szliśmy od końca)
 	path_actions.reverse()
 	
-	# Łączymy wszystkie litery w jeden String błyskawicznie
 	return \"\".join(path_actions)
 
 
