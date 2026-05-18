@@ -34,11 +34,11 @@ func generate_cave():
 		for y in range(size.y):
 			for x in range(size.x):
 				var wall_count = count_walls(x, y, 1)
-				var flood_protocol = count_walls(x, y, 2)
 				var cell_type = grid[x][y]
 
 				if grid_copy[x][y]:
 					if i == no_iter - 1:
+						var flood_protocol = count_walls(x, y, 2)
 						grid_copy[x][y] = wall_count >= 4 or flood_protocol
 					else:
 						grid_copy[x][y] = wall_count >= 4

@@ -1,4 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://jjonoqkeahe3"]
+[gd_scene format=3 uid="uid://jjonoqkeahe3"]
 
 [sub_resource type="GDScript" id="GDScript_jc3ht"]
 script/source = "extends Node
@@ -22,5 +22,5 @@ func generate_level():
 	return tmp_map
 "
 
-[node name="CellularAutomata" type="Node"]
+[node name="CellularAutomata" type="Node" unique_id=245519933]
 script = SubResource("GDScript_jc3ht")
