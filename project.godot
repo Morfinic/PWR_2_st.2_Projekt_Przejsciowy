@@ -25,6 +25,7 @@ SceneChanger="*res://Globals/SceneChanger.tscn"
 FuncTimer="*res://Globals/timer.tscn"
 Similiar="*uid://cxl267dq6aovy"
 AStar="*uid://8gio1eslkx6q"
+Resources="*uid://d4ijdq4l6wkwm"
 
 [display]
 

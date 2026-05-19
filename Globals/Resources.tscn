@@ -1,8 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://d4ijdq4l6wkwm"]
+[gd_scene format=3 uid="uid://d4ijdq4l6wkwm"]
 
 [sub_resource type="GDScript" id="GDScript_7n1tu"]
 script/source = "extends Node
+
+
+var data_folder: String = \"res:/\" if OS.is_debug_build() else OS.get_executable_path().get_base_dir()
 "
 
-[node name="Resources" type="Node"]
+[node name="Resources" type="Node" unique_id=30178940]
 script = SubResource("GDScript_7n1tu")

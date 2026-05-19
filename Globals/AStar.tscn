@@ -167,7 +167,7 @@ func normalized_edit_distance(s1: String, s2: String) -> float:
 
 
 func _save_summary_to_csv(data: Array):
-	var path = \"res://Pomiary/astar_report.csv\"
+	var path = Resources.data_folder + \"/Pomiary/astar_report.csv\"
 	var file_exists = FileAccess.file_exists(path)
 	var file = FileAccess.open(path, FileAccess.READ_WRITE if file_exists else FileAccess.WRITE)
 	

@@ -72,7 +72,7 @@ func analyze_algorithm_diversity():
 	reset()
 
 func _save_summary_to_csv(avg_dist: float):
-	var path = \"res://Pomiary/similarity_report.csv\"
+	var path = Resources.data_folder + \"/Pomiary/similarity_report.csv\"
 	var file_exists = FileAccess.file_exists(path)
 	var file = FileAccess.open(path, FileAccess.READ_WRITE if file_exists else FileAccess.WRITE)
 	
