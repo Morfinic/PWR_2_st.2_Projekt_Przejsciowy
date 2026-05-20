@@ -56,31 +56,31 @@ func calculate_ncd(map_a: Array, map_b: Array) -> float:
 func analyze_algorithm_diversity():
 	var ncd_results = []
 	
-	for i in range(map_arrays.size()):
-		for j in range(i + 1, map_arrays.size()):
-			var dist = calculate_ncd(map_arrays[i], map_arrays[j])
-			ncd_results.append(dist)
+	for i in range(1, map_arrays.size()):
+		var dist = calculate_ncd(map_arrays[i - 1], map_arrays[i])
+		ncd_results.append(dist)
 	
-	var total = 0.0
-	for val in ncd_results: total += val
-	var avg_ncd = total / ncd_results.size()
+	#var total = 0.0
+	#for val in ncd_results: total += val
+	#var avg_ncd = total / ncd_results.size()
 	
-	_save_summary_to_csv(avg_ncd)
+	_save_summary_to_csv(ncd_results)
 	AStar.alg_name = alg_name
 	AStar.map_size = map_size
 	AStar.map_arrays = map_arrays
 	reset()
 
-func _save_summary_to_csv(avg_dist: float):
-	var path = Resources.data_folder + \"/Pomiary/similarity_report.csv\"
+func _save_summary_to_csv(data: Array):
+	var path = Resources.data_folder + \"/Pomiary/similiarity_report_%s_%dx%d.csv\" % [alg_name, map_size.x, map_size.y]
 	var file_exists = FileAccess.file_exists(path)
 	var file = FileAccess.open(path, FileAccess.READ_WRITE if file_exists else FileAccess.WRITE)
 	
 	if not file_exists:
-		file.store_line(\"Algorytm;Rozmiar;Srednia_NCD;Zroznicowanie%\")
+		file.store_line(\"Srednia_NCD;Zroznicowanie%\")
 	
 	file.seek_end()
-	file.store_line(\"%s;%dx%d;%.4f;%.1f%%\" % [alg_name, map_size.x, map_size.y, avg_dist, avg_dist * 100.0])
+	for value in data:
+		file.store_line(\"%.4f;%.1f%%\" % [value, value * 100.0])
 	file.close()
 "
 

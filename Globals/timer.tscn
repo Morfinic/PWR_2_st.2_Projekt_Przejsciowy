@@ -23,9 +23,8 @@ func measure(function: Callable, algName: String = \"<>\", level_size := Vector2
 	var result = function.call()
 	var time = stop(algName)
 	
-	if Resources.is_testing:
-		_save_to_file(algName, level_size, time, result)
-		Similiar.map_arrays.append(result)
+	_save_to_file(algName, level_size, time, result)
+	Similiar.map_arrays.append(result)
 	
 	return result
 

@@ -56,29 +56,30 @@ func analyze_diversity():
 		
 		if traj != \"\": 
 			all_trajectories.append(traj)
+		else:
+			all_trajectories.append(\"\")
 		
 		await get_tree().process_frame
 			
 	var edit_distances = []
 	var total_comparisons = 0
-	for i in range(all_trajectories.size()):
-		for j in range(i + 1, all_trajectories.size()):
-			var dist = normalized_edit_distance(all_trajectories[i], all_trajectories[j])
-			edit_distances.append(dist)
-			total_comparisons += 1
-			
-			if total_comparisons % 10 == 0:
-				await get_tree().process_frame
-			
-	var total_dist = 0.0
-	for d in edit_distances: 
-		total_dist += d
+	for i in range(1, all_trajectories.size()):
+		var dist = normalized_edit_distance(all_trajectories[i - 1], all_trajectories[i])
+		edit_distances.append(dist)
+		total_comparisons += 1
 		
-	var avg_diversity = 0.0
-	if edit_distances.size() > 0:
-		avg_diversity = total_dist / float(edit_distances.size())
+		if total_comparisons % 10 == 0:
+			await get_tree().process_frame
+			
+	#var total_dist = 0.0
+	#for d in edit_distances: 
+		#total_dist += d
+		#
+	#var avg_diversity = 0.0
+	#if edit_distances.size() > 0:
+		#avg_diversity = total_dist / float(edit_distances.size())
 		
-	_save_summary_to_csv([avg_diversity])
+	_save_summary_to_csv(edit_distances)
 
 
 func get_agent_trajectory(start: Vector2i, target: Vector2i, grid: Dictionary) -> String:
@@ -167,15 +168,16 @@ func normalized_edit_distance(s1: String, s2: String) -> float:
 
 
 func _save_summary_to_csv(data: Array):
-	var path = Resources.data_folder + \"/Pomiary/astar_report.csv\"
+	var path = Resources.data_folder + \"/Pomiary/astar_report_%s_%dx%d.csv\" % [alg_name, map_size.x, map_size.y]
 	var file_exists = FileAccess.file_exists(path)
 	var file = FileAccess.open(path, FileAccess.READ_WRITE if file_exists else FileAccess.WRITE)
 	
 	if not file_exists:
-		file.store_line(\"Algorytm;Rozmiar;Stopien róznorodności\")
+		file.store_line(\"Stopien róznorodności\")
 	
 	file.seek_end()
-	file.store_line(\"%s;%dx%d;%.4f\" % [alg_name, map_size.x, map_size.y, data[0]])
+	for line in data:
+		file.store_line(\"%.4f\" % [line])
 	file.close()
 "
 
