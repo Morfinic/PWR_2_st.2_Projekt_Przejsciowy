@@ -5,6 +5,7 @@ script/source = "extends Node
 
 
 var data_folder: String = \"res:/\" if OS.is_debug_build() else OS.get_executable_path().get_base_dir()
+var is_testing: bool = false
 "
 
 [node name="Resources" type="Node" unique_id=30178940]

@@ -18,14 +18,14 @@ func stop(algName: String):
 	return duration
 
 
-func measure(function: Callable, algName: String = \"<>\", level_size := Vector2i(), is_testing := false):
+func measure(function: Callable, algName: String = \"<>\", level_size := Vector2i()):
 	start()
 	var result = function.call()
 	var time = stop(algName)
 	
-	if is_testing:
+	if Resources.is_testing:
 		_save_to_file(algName, level_size, time, result)
-	Similiar.map_arrays.append(result)
+		Similiar.map_arrays.append(result)
 	
 	return result
 
