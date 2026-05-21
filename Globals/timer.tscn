@@ -34,7 +34,7 @@ func _save_to_file
 	algName: String, level_size: Vector2i, 
 	time: float, map_data: Variant
 ):
-	var path = Resources.data_folder + \"/Pomiary/%s_%dx%d.csv\" % [algName, level_size.x, level_size.y]
+	var path = Resources.data_folder + \"/Pomiary/%s_%dx%d.txt\" % [algName, level_size.x, level_size.y]
 	
 	if not DirAccess.dir_exists_absolute(Resources.data_folder + \"/Pomiary\"):
 		DirAccess.make_dir_recursive_absolute(Resources.data_folder + \"/Pomiary\")

@@ -168,7 +168,7 @@ func normalized_edit_distance(s1: String, s2: String) -> float:
 
 
 func _save_summary_to_csv(data: Array):
-	var path = Resources.data_folder + \"/Pomiary/astar_report_%s_%dx%d.csv\" % [alg_name, map_size.x, map_size.y]
+	var path = Resources.data_folder + \"/Pomiary/astar_report_%s_%dx%d.txt\" % [alg_name, map_size.x, map_size.y]
 	var file_exists = FileAccess.file_exists(path)
 	var file = FileAccess.open(path, FileAccess.READ_WRITE if file_exists else FileAccess.WRITE)
 	
@@ -179,6 +179,41 @@ func _save_summary_to_csv(data: Array):
 	for line in data:
 		file.store_line(\"%.4f\" % [line])
 	file.close()
+	
+	_save_maps_to_csv(map_arrays)
+
+
+func _save_maps_to_csv(map_arrays: Array):
+	var grid = []
+	
+	for y in range(map_size.y):
+		var row = []
+		for x in range(map_size.x):
+			row.append(0)
+		grid.append(row)
+	
+	for path in map_arrays:
+		for point in path:
+			var x = int(point.x) if (point is Vector2 or point is Vector2i) else int(point[0])
+			var y = int(point.y) if (point is Vector2 or point is Vector2i) else int(point[1])
+			
+			# Bezpiecznik, żeby nie wyjść poza zakres tablicy
+			if x >= 0 and x < map_size.x and y >= 0 and y < map_size.y:
+				grid[y][x] += 1
+
+	var path = Resources.data_folder + \"/Pomiary/heatmap_%s_%dx%d.txt\" % [alg_name, map_size.x, map_size.y]
+	var file_exists = FileAccess.file_exists(path)
+	var file = FileAccess.open(path, FileAccess.READ_WRITE if file_exists else FileAccess.WRITE)
+	
+	if file:
+		for row in grid:
+			var line = \"\"
+			for i in range(row.size()):
+				line += str(row[i])
+				if i < row.size() - 1:
+					line += ','
+			file.store_line(line)
+		file.close()
 "
 
 [node name="AStar" type="Node" unique_id=214099088]

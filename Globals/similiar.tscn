@@ -71,7 +71,7 @@ func analyze_algorithm_diversity():
 	reset()
 
 func _save_summary_to_csv(data: Array):
-	var path = Resources.data_folder + \"/Pomiary/similiarity_report_%s_%dx%d.csv\" % [alg_name, map_size.x, map_size.y]
+	var path = Resources.data_folder + \"/Pomiary/similiarity_report_%s_%dx%d.txt\" % [alg_name, map_size.x, map_size.y]
 	var file_exists = FileAccess.file_exists(path)
 	var file = FileAccess.open(path, FileAccess.READ_WRITE if file_exists else FileAccess.WRITE)
 	
